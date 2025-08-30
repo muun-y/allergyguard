@@ -1,0 +1,257 @@
+<%- include("templates/header") %>
+    <%- include("templates/sidebar") %>
+
+        <!-- Page Heading -->
+        <h1 class="text-base md:text-3xl md:font-bold mb-5 text-center text-gray-500">
+            Update my information
+        </h1>
+
+        <div class="flex justify-center overflow-x-auto">
+            <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+
+                <!-- Username (Read-only) -->
+                <div class="mb-4">
+                    <label for="username" class="text-left block text-sm font-medium text-gray-900">Username</label>
+                    <input type="text" name="username" id="username" value="<%= username %>"
+                        class="mt-2 w-full p-2 border border-gray-300 rounded bg-gray-100 focus:outline-none" readonly>
+                </div>
+
+                <!-- Email Update Form -->
+                <form id="emailForm" method="POST">
+                    <div class="mb-4">
+                        <label for="email" class="text-left block text-sm font-medium text-gray-900">Email</label>
+                        <input type="email" name="newEmail" id="newEmail" value="<%= email %>" required
+                            class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Update Email Button -->
+                    <button type="submit"
+                        class="w-full text-white bg-theme-extra-color2 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:ring-2 hover:text-theme-extra-color2 hover:bg-white">
+                        Update Email
+                    </button>
+                </form>
+
+                <!-- Password Update Form -->
+                <form id="passwordForm" action="/updatePassword" method="POST">
+                    <div class="mb-4 mt-6">
+                        <label for="currentPassword" class="text-left block text-sm font-medium text-gray-900">Current
+                            Password</label>
+                        <input type="password" name="currentPassword" id="currentPassword" placeholder="********"
+                            required
+                            class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p id="currentPasswordError" class="text-xs mt-2 text-red-500 hidden">New password cannot be the
+                            same as the current
+                            password.</p>
+                    </div>
+
+                    <div class="mb-4 mt-6">
+                        <label for="newPassword" class="text-left block text-sm font-medium text-gray-900">New
+                            Password</label>
+                        <input type="password" name="newPassword" id="newPassword" placeholder="********" required
+                            class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Password Validation Message -->
+                        <div id="message" class="text-xs mt-2">
+                            <p class="text-left">Password must contain the following:</p>
+                            <p id="letter" class="invalid">A <b>lowercase</b> letter</p>
+                            <p id="capital" class="invalid">A <b>capital (uppercase)</b> letter</p>
+                            <p id="number" class="invalid">A <b>number</b></p>
+                            <p id="symbol" class="invalid">A <b>symbol</b></p>
+                            <p id="length" class="invalid">Minimum <b>10 characters</b></p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirmPassword" class="text-left block text-sm font-medium text-gray-900">Confirm
+                            New Password</label>
+                        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="********"
+                            required
+                            class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Mismatch warning -->
+                        <p id="confirmMessage" class="text-xs mt-2 text-red-500 hidden">Passwords do not match.</p>
+                    </div>
+
+                    <!-- Update Password Button -->
+                    <button type="submit"
+                        class="w-full text-white bg-theme-extra-color2 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:ring-2 hover:text-theme-extra-color2 hover:bg-white">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // Email form submission with AJAX
+            document.getElementById("emailForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const newEmail = document.getElementById("newEmail").value;
+
+                const response = await fetch("/updateEmail", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ newEmail })
+                });
+
+                const resultText = await response.text();
+
+                if (response.ok) {
+                    showPopup(resultText);
+                } else {
+                    showPopup(resultText);
+                }
+            });
+
+            document.getElementById("passwordForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const currentPassword = document.getElementById("currentPassword").value;
+                const newPassword = document.getElementById("newPassword").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+
+                // Check if all the password validation criteria are met
+                if (isPasswordValid()) {
+                    const response = await fetch("/updatePassword", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+                    });
+
+                    const resultText = await response.text();
+
+                    if (response.ok) {
+                        showPopup(resultText);
+                    } else {
+                        showPopup(resultText);
+                    }
+                } else {
+                    showPopup("Please make sure your password meets all the criteria.");
+                }
+            });
+
+            function isPasswordValid() {
+                // Check if all the password criteria are valid
+                const letterValid = !letter.classList.contains("invalid");
+                const capitalValid = !capital.classList.contains("invalid");
+                const numberValid = !number.classList.contains("invalid");
+                const symbolValid = !symbol.classList.contains("invalid");
+                const lengthValid = !length.classList.contains("invalid");
+
+                return letterValid && capitalValid && numberValid && symbolValid && lengthValid;
+            }
+
+
+            var myInput = document.getElementById("newPassword");
+            var confirmPasswordInput = document.getElementById("confirmPassword");
+            var confirmMessage = document.getElementById("confirmMessage");
+            var letter = document.getElementById("letter");
+            var capital = document.getElementById("capital");
+            var number = document.getElementById("number");
+            var symbol = document.getElementById("symbol");
+            var length = document.getElementById("length");
+
+
+            // When the user clicks on the password field, show the message box
+            myInput.onfocus = function () {
+                document.getElementById("message").style.display = "block";
+            }
+
+            // When the user clicks outside of the password field, hide the message box
+            myInput.onblur = function () {
+                document.getElementById("message").style.display = "none";
+            }
+
+            // When the user starts to type something inside the password field
+            myInput.onkeyup = function () {
+                if (myInput.value === "") {
+                    // Reset all validations if input is empty
+                    [letter, capital, number, symbol, length].forEach(function (item) {
+                        item.classList.remove("valid");
+                        item.classList.add("invalid");
+                        item.style.textDecoration = "none"; // Remove line-through
+                    });
+                    return;
+                }
+
+                // Validate lowercase letters
+                var lowerCaseLetters = /[a-z]/g;
+                if (myInput.value.match(lowerCaseLetters)) {
+                    letter.classList.remove("invalid");
+                    letter.classList.add("valid");
+                    letter.style.textDecoration = "line-through"; // Apply line-through
+                } else {
+                    letter.classList.remove("valid");
+                    letter.classList.add("invalid");
+                    letter.style.textDecoration = "none"; // Remove line-through
+                }
+
+                // Validate capital letters
+                var upperCaseLetters = /[A-Z]/g;
+                if (myInput.value.match(upperCaseLetters)) {
+                    capital.classList.remove("invalid");
+                    capital.classList.add("valid");
+                    capital.style.textDecoration = "line-through"; // Apply line-through
+                } else {
+                    capital.classList.remove("valid");
+                    capital.classList.add("invalid");
+                    capital.style.textDecoration = "none"; // Remove line-through
+                }
+
+                // Validate numbers
+                var numbers = /[0-9]/g;
+                if (myInput.value.match(numbers)) {
+                    number.classList.remove("invalid");
+                    number.classList.add("valid");
+                    number.style.textDecoration = "line-through"; // Apply line-through
+                } else {
+                    number.classList.remove("valid");
+                    number.classList.add("invalid");
+                    number.style.textDecoration = "none"; // Remove line-through
+                }
+
+                // Validate at least one symbol
+                var atLeastOneSymbol = /[~!@#$%^&*()_+{}\[\]:;<>,.?/-]/g;
+                if (myInput.value.match(atLeastOneSymbol)) {
+                    symbol.classList.remove("invalid");
+                    symbol.classList.add("valid");
+                    symbol.style.textDecoration = "line-through"; // Apply line-through
+                } else {
+                    symbol.classList.remove("valid");
+                    symbol.classList.add("invalid");
+                    symbol.style.textDecoration = "none"; // Remove line-through
+                }
+
+                // Validate length
+                if (myInput.value.length >= 10) {
+                    length.classList.remove("invalid");
+                    length.classList.add("valid");
+                    length.style.textDecoration = "line-through"; // Apply line-through
+                } else {
+                    length.classList.remove("valid");
+                    length.classList.add("invalid");
+                    length.style.textDecoration = "none"; // Remove line-through
+                }
+
+                // Check if password and confirm password match
+                checkPasswordMatch();
+            }
+
+            // When the user starts to type something inside the confirm password field
+            confirmPasswordInput.onkeyup = function () {
+                checkPasswordMatch();
+            }
+
+            // Function to check if password and confirm password match
+            function checkPasswordMatch() {
+                if (myInput.value === confirmPasswordInput.value) {
+                    confirmMessage.classList.add("hidden");
+                } else {
+                    confirmMessage.classList.remove("hidden");
+                }
+            }
+        </script>
+        <%- include("templates/popup") %>
+            <%- include("templates/footer") %>

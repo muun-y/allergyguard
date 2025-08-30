@@ -1,0 +1,32 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+        <script src="/js/past.js"></script>
+        <div class="p-4">
+            <!-- Not logged in -->
+            <% if (!isAuthenticated) { %>
+                <div class="h-screen flex justify-center items-center">
+                    <a href="/login"
+                        class="px-6 py-3 bg-gray-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 transition duration-200">
+                        Login
+                    </a>
+                </div>
+                <% } else { %>
+                    <!-- logged in -->
+                    <div>
+                        <!-- navigation tab -->
+                        <div class="flex justify-center items-center gap-x-4 mb-6">
+                            <button class="tab-buttons px-4 py-2 border rounded focus:bg-gray-200" data-tabs="past">Past
+                                Event</button>
+                            <button class="tab-buttons px-4 py-2 border rounded focus:bg-gray-200"
+                                data-tabs="deleted">Recycle bin</button>
+                        </div>
+
+                        <!-- tab contents -->
+                        <div id="tab-content" class="space-y-4">
+                            <!-- default is today -->
+                            <p class="text-center text-gray-500">Loading...</p>
+                        </div>
+                    </div>
+                    <% } %>
+        </div>
+        <%- include("templates/footer") %>

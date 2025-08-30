@@ -1,0 +1,92 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+        <h1 class="text-base md:text-3xl md:font-bold mb-5 text-center text-gray-500">
+            <!-- Upload -->
+            <!-- Hello, <%= user.username %>. Welcome to Linky Dinky! -->
+            Please choose the type and upload here
+        </h1>
+
+        <!-- Tab Navigation -->
+
+        <div class="flex space-x-4">
+            <div class="w-1/4">
+                <div class="flex flex-col space-y-4 mb-8">
+                    <button class="bg-white px-4 py-2 rounded font-bold" onclick="showForm('linksForm')">Links</button>
+                    <button class="bg-white px-4 py-2 rounded font-bold"
+                        onclick="showForm('imagesForm')">Images</button>
+                    <button class="bg-white px-4 py-2 rounded font-bold" onclick="showForm('textForm')">Text</button>
+                </div>
+            </div>
+            <div class=" flex justify-center w-3/4">
+                <!-- Links Form -->
+                <div id="linksForm" class="hidden form-container bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                    <h2 class="text-base md:text-2xl md:font-semibold mb-4 mb-4">Upload Link</h2>
+                    <form action="/upload-link" method="POST" onsubmit="return validateUrl()">
+                        <div class="mb-4">
+                            <label for="url" class="block text-sm font-medium leading-6 text-gray-900"></label>
+                            <div class="mt-2">
+                                <div
+                                    class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 sm:max-w-md">
+                                    <input type="text" name="url" id="url" autocomplete="url"
+                                        class="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                                        placeholder="Enter URL">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit"
+                            class="w-full text-white bg-theme-extra-color2 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:ring-2 hover:text-theme-extra-color2 hover:bg-white">Upload</button>
+                    </form>
+                </div>
+
+                <!-- Images Form -->
+                <div id="imagesForm" class="hidden form-container bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                    <h2 class="text-base md:text-2xl md:font-semibold mb-4 mb-4">Upload Images</h2>
+                    <form action="/upload-image" method="POST" enctype="multipart/form-data"
+                        onsubmit="return validateImageUpload()">
+                        <div class="mb-4">
+                            <!-- Drag and Drop -->
+                            <div class="drag-area">
+                                <div id="preview" class="mt-4">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" viewBox="0 0 24 24" fill="currentColor"
+                                        aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <span class="header text-blue-500">Drag & Drop</span>
+                                <span class="header">or <span class="browse pointer text-blue-500">browse</span></span>
+                                <input id="file-upload" name="file-upload" type="file" class="sr-only" accept="image/*">
+                                <br /><span class="support">Supports: JPEG, JPG, PNG, GIF, WEBP</span>
+                            </div>
+                        </div>
+                        <button type="submit"
+                            class="w-full text-white bg-theme-extra-color2 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:ring-2 hover:text-theme-extra-color2 hover:bg-white">Upload</button>
+                    </form>
+                </div>
+
+
+                <!-- Text Form -->
+                <div id="textForm" class="hidden form-container bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                    <h2 class="text-base md:text-2xl md:font-semibold mb-4 mb-4">Enter Text</h2>
+                    <!-- Submit form -->
+                    <form action="/upload-text" method="POST" onsubmit="return validateTextInput()">
+                        <!-- option -->
+                        <div class="mb-4">
+                            <div class="flex space-x-4">
+                                <div id="textInputContainer" class="mb-4 w-full">
+                                    <textarea id="textInput" name="textInput" rows="4"
+                                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded mt-2 p-2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedOption" name="selectedOption" value="">
+
+                        <button type="submit"
+                            class="w-full text-white bg-theme-extra-color2 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:ring-2 hover:text-theme-extra-color2 hover:bg-white">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <%- include("templates/popup") %>
+            <%- include("templates/footer") %>

@@ -1,0 +1,64 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+        <script src="/js/view.js"></script>
+        <div class="p-4">
+            <!-- Not logged in -->
+            <% if (!isAuthenticated) { %>
+                <div class="h-screen flex flex-col justify-center items-center text-center">
+                    <!-- Application Overview -->
+                    <h1 class="text-3xl font-bold mb-4">Welcome to Your Smart Calendar!</h1>
+                    <p class="text-lg text-gray-700 mb-6">
+                        Plan and organize your day effortlessly with our Calendar/Scheduler app. <br />
+                        Create events, invite friends, and find the best time for everyone! <br />
+                        Track your daily, weekly, or monthly activities with ease. <br />
+                    </p>
+                    <div>
+                        <p class="text-sm font-light text-gray-500">
+                            Continue with <a href="/login" class="text-blue-500 hover:underline">Login</a>
+                        </p>
+                    </div>
+                    <div class="flex items-center text-gray-400 my-4">
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="px-4">or</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-light text-gray-500">
+                            Don’t have an account yet? <a href="/signup" class="text-blue-500 hover:underline">Sign
+                                up</a>
+                        </p>
+                    </div>
+                    </p>
+                </div>
+                <% } else { %>
+                    <!-- logged in -->
+                    <div>
+                        <!-- navigation tab -->
+                        <div class="flex justify-center items-center gap-x-4 mb-6">
+                            <button class="tab-button px-4 py-2 border rounded focus:bg-gray-200"
+                                data-tab="today">Today</button>
+                            <button class="tab-button px-4 py-2 border rounded focus:bg-gray-200"
+                                data-tab="upcoming">Upcoming</button>
+                            <button class="tab-button px-4 py-2 border rounded focus:bg-gray-200"
+                                data-tab="week">Week</button>
+                            <button class="tab-button px-4 py-2 border rounded focus:bg-gray-200"
+                                data-tab="month">Month</button>
+                        </div>
+
+                        <!-- date selector -->
+                        <div id="date-selector-container" class="flex items-center justify-center gap-x-4 mb-6">
+                            <button id="prev-date" class="p-2 bg-gray-200 rounded hover:bg-gray-300">&lt;</button>
+                            <h2 id="selected-date" class="text-lg font-bold">Nov 9, 2032</h2>
+                            <button id="next-date" class="p-2 bg-gray-200 rounded hover:bg-gray-300">&gt;</button>
+                        </div>
+
+                        <!-- tab contents -->
+                        <div id="tab-content" class="space-y-4">
+                            <!-- default is today -->
+                            <p class="text-center text-gray-500">Loading...</p>
+                        </div>
+                    </div>
+                    <% } %>
+        </div>
+        <%- include("templates/deleteModal") %>
+            <%- include("templates/footer") %>

@@ -1,0 +1,89 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+        <div class="p-4 grid gap-y-2">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <div class="text-xl font-bold">
+                        <%=username%>
+                    </div>
+                    <div>
+                        <%=email%>
+                    </div>
+                </div>
+                <div>
+                    <% if (profile_img) { %>
+                        <img src="<%= profile_img %>" alt="Profile Image" class="w-10 h-10 object-cover rounded-full">
+                        <% } else { %>
+                            <svg class="w-10 h-10 text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                            </svg>
+                            <% } %>
+                </div>
+            </div>
+            <div>
+                <p class="text-sm text-gray-400">
+                    <%= followersCount %> followers
+                </p>
+            </div>
+            <!-- <button type="submit" class="w-full rounded-lg text-sm px-5 py-1 text-center border-2">
+                Edit profile
+            </button> -->
+        </div>
+        <div class="border-b">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-styled-tab"
+                data-tabs-toggle="#default-styled-tab-content" data-tabs-active-classes="text-black border-black"
+                data-tabs-inactive-classes="text-gray-500 border-gray-300" role="tablist">
+                <li class="flex-1" role="presentation">
+                    <button class="w-full inline-block py-4 border-b-2 " id="threads-styled-tab"
+                        data-tabs-target="#styled-threads" type="button" role="tab" aria-controls="threads"
+                        aria-selected="false">Following</button>
+                </li>
+                <li class="flex-1" role="presentation">
+                    <button class="w-full inline-block p-4 border-b-2 rounded-t-lg" id="replies-styled-tab"
+                        data-tabs-target="#styled-replies" type="button" role="tab" aria-controls="replies"
+                        aria-selected="false">Followers</button>
+                </li>
+            </ul>
+        </div>
+        <div id="default-styled-tab-content">
+            <div class="hidden rounded-lg" id="styled-threads" role="tabpanel" aria-labelledby="threads-tab">
+                <div class="border-b-2 p-4">
+                    <div class="flex justify-between items-center" data-modal-target="timeline-modal"
+                        data-modal-toggle="timeline-modal">
+                        <div class="inline-flex flex items-center">
+                            <% if (profile_img) { %>
+                                <img src="<%= profile_img %>" alt="Profile Image"
+                                    class="w-10 h-10 me-3 object-cover rounded-full">
+                                <% } else { %>
+                                    <svg class="w-10 h-10 me-3 text-gray-200" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                                    </svg>
+                                    <% } %>
+
+                                        <!-- <svg class="w-10 h-10 me-3 text-gray-200" aria-hidden="true"
+                                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                                            </svg> -->
+                                        <p class="text-gray-400">What's new?</p>
+                        </div>
+                        <div>
+                            <button type="submit"
+                                class="w-full font-semibold rounded-lg text-sm px-5 py-1 text-center border-2">
+                                Post
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replies -->
+            <div class="hidden rounded-lg bg-gray-50" id="styled-replies" role="tabpanel" aria-labelledby="replies-tab">
+
+            </div>
+        </div>
+        <%- include("templates/footer") %>

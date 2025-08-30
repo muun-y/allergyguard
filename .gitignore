@@ -1,0 +1,4 @@
+## Purpose: Ignore node_modules and .env files from being pushed to the repository
+.env
+/node_modules
+package-lock.json

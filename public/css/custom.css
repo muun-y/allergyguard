@@ -1,0 +1,78 @@
+.like-icon {
+  fill: none;
+  stroke: black;
+  transition: fill 0.3s, stroke 0.3s;
+}
+
+.like-icon.liked {
+  fill: red;
+  stroke: red;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.event-box {
+  display: block;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.event-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-time {
+  font-size: 14px;
+  color: #555;
+}
+
+/* FullCalendar title */
+.fc .fc-toolbar-title {
+  font-size: 1.15rem !important;
+  font-weight: bold;
+  color: inherit;
+  text-align: center;
+}
+
+#prev-date,
+#next-date {
+  background-color: #1e2b37;
+  border: 1px solid #1a252f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+#prev-date:hover,
+#next-date:hover {
+  background-color: var(--fc-button-hover-bg-color, #1e2b37);
+  border-color: var(--fc-button-hover-border-color, #1a252f);
+  color: var(--fc-button-text-color, #fff);
+}
+
+#selected-date {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: inherit;
+  text-align: center;
+}

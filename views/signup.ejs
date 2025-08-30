@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/custom.css" />
+    <script src="/js/script.js"></script>
+    <script src="/js/user.js"></script>
+    <!-- <script src="/js/thread.js"></script> -->
+    <!-- <script src="/js/content.js"></script> -->
+    <script src="/js/popup.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/flowbite@1.4.7/dist/flowbite.js"></script>
+    <title>Calendar_project3</title>
+</head>
+
+<body class="flex flex-col h-screen bg-white md:bg-theme-bg text-xs md:text-base">
+    <main class="flex justify-center items-center text-center p-8 h-full w-full bg-white text-sm md:text-base">
+        <div class="container flex-col items-center">
+            <div class="flex justify-center overflow-x-auto">
+                <div class="bg-white rounded-lg w-full max-w-md">
+                    <p class="font-bold mb-5 text-center">
+                        Sign up
+                    </p>
+                    <!-- Sign Up Form -->
+                    <form id="signupForm" enctype="multipart/form-data">
+                        <!-- profile image -->
+                        <div class="mb-4 flex justify-center">
+                            <button id="dropdownMenuIconButton" data-dropdown-toggle="dropdownDots"
+                                class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100"
+                                type="button">
+                                <div
+                                    class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
+                                    <img id="profileImage" class="absolute w-full h-full object-cover" src=""
+                                        alt="Profile Preview" style="display: none;">
+                                    <svg id="defaultIcon" class="absolute w-12 h-12 text-gray-400 -left-1"
+                                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd"
+                                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Dropdown menu -->
+                        <div id="dropdownDots"
+                            class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 border-2 ">
+                            <ul class="py-2 text-sm text-gray-700 whitespace-nowrap"
+                                aria-labelledby="dropdownMenuIconButton">
+                                <li>
+                                    <label for="profile_img"
+                                        class="block px-4 py-2 hover:bg-gray-100 cursor-pointer">Upload picture</label>
+                                    <input id="profile_img" type="file" class="hidden" accept="image/*"
+                                        onchange="uploadProfile(event)">
+                                </li>
+                                <li class="block px-4 py-2 hover:bg-gray-100 text-red cursor-pointer"
+                                    onclick="removeProfile()">
+                                    Remove current
+                                    picture
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-4">
+                            <label for="username"
+                                class="text-left block text-sm font-medium text-gray-900">Username</label>
+                            <input type="text" name="username" id="username" placeholder="username" required
+                                class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-4">
+                            <label for="email" class="text-left block text-sm font-medium text-gray-900">Email</label>
+                            <input type="email" name="email" id="email" placeholder="email@example.com" required
+                                class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="password"
+                                class="text-left block text-sm font-medium text-gray-900">Password</label>
+                            <input type="password" name="password" id="password" placeholder="********" required
+                                class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- Password Validation Message -->
+                            <div id="message" class="text-xs mt-2">
+                                <p class="text-left">Password must contain the following:</p>
+                                <p id="letter" class="invalid">A <b>lowercase</b> letter</p>
+                                <p id="capital" class="invalid">A <b>capital (uppercase)</b> letter</p>
+                                <p id="number" class="invalid">A <b>number</b></p>
+                                <p id="symbol" class="invalid">A <b>symbol</b></p>
+                                <p id="length" class="invalid">Minimum <b>10 characters</b></p>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="mb-4">
+                            <label for="confirmPassword"
+                                class="text-left block text-sm font-medium text-gray-900">Confirm
+                                Password</label>
+                            <input type="password" name="confirmPassword" id="confirmPassword" placeholder="********"
+                                required
+                                class="mt-2 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- Mismatch warning -->
+                            <p id="confirmMessage" class="text-xs mt-2 text-red-500 hidden">Passwords do not match.</p>
+                        </div>
+
+                        <!-- File Upload -->
+                        <!-- <div class="mb-4">
+                        <label for="file-upload"
+                            class="text-left block text-sm font-medium leading-6 text-gray-900">Upload an Image:</label>
+                        <div
+                            class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-300 p-6 bg-gray-50">
+                            <div class="text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" viewBox="0 0 24 24" fill="currentColor"
+                                    aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <div class="mt-4 flex text-sm leading-6 text-gray-600">
+                                    <label for="file-upload"
+                                        class="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 hover:text-blue-500">
+                                        <span>Upload a file</span>
+                                        <input id="file-upload" name="file-upload" type="file" class="sr-only">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                        </div>
+                    </div> -->
+
+                        <!-- Sign Up button  -->
+                        <button type="submit"
+                            class="w-full bg-black text-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:text-white">
+                            Sign Up
+                        </button>
+                    </form>
+
+                    <!-- Login link -->
+                    <p class="mt-6 text-center text-sm text-gray-600">
+                        Already have an account?
+                        <a href="/login" class="text-blue-500 hover:underline">Log in</a>
+                    </p>
+                </div>
+            </div>
+
+            <script>
+                document.getElementById("signupForm").addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const username = document.getElementById("username").value;
+                    const email = document.getElementById("email").value;
+                    const password = document.getElementById("password").value;
+                    const confirmPassword = document.getElementById("confirmPassword").value;
+                    const profileImg = document.getElementById("profile_img").files[0];
+                    console.log('profileImg', profileImg);
+
+                    // Validate if password and confirm password match
+                    if (password !== confirmPassword) {
+                        showPopup("Password and confirm password don't match");
+                        return;
+                    }
+
+                    // Validate password rules
+                    if (!validatePassword(password)) {
+                        showPopup("Password does not meet the required criteria.");
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append("username", username);
+                    formData.append("email", email);
+                    formData.append("password", password);
+                    if (profileImg) {
+                        formData.append("profile", profileImg); // 이미지 파일 추가
+                    }
+
+                    // If all validations pass, send the form data
+                    const response = await fetch("/signingUp", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const resultText = await response.text();
+
+                    if (response.ok) {
+                        showPopup(resultText);
+                        setTimeout(function () {
+                            window.location.href = '/login';
+                        }, 2000);
+                    } else {
+                        showPopup(resultText);
+                    }
+                });
+
+                var myInput = document.getElementById("password");
+                var confirmPasswordInput = document.getElementById("confirmPassword");
+                var confirmMessage = document.getElementById("confirmMessage");
+                var letter = document.getElementById("letter");
+                var capital = document.getElementById("capital");
+                var number = document.getElementById("number");
+                var symbol = document.getElementById("symbol");
+                var length = document.getElementById("length");
+
+                // Password validation logic
+                function validatePassword(password) {
+                    // Validate lowercase letters
+                    var lowerCaseLetters = /[a-z]/g;
+                    var hasLowerCase = password.match(lowerCaseLetters);
+
+                    // Validate capital letters
+                    var upperCaseLetters = /[A-Z]/g;
+                    var hasUpperCase = password.match(upperCaseLetters);
+
+                    // Validate numbers
+                    var numbers = /[0-9]/g;
+                    var hasNumber = password.match(numbers);
+
+                    // Validate symbols
+                    var symbols = /[~!@#$%^&*()_+{}\[\]:;<>,.?/-]/g;
+                    var hasSymbol = password.match(symbols);
+
+                    // Validate length
+                    var isValidLength = password.length >= 10;
+
+                    // Check if all conditions are met
+                    return hasLowerCase && hasUpperCase && hasNumber && hasSymbol && isValidLength;
+                }
+
+                // When the user clicks on the password field, show the message box
+                myInput.onfocus = function () {
+                    document.getElementById("message").style.display = "block";
+                }
+
+                // When the user clicks outside of the password field, hide the message box
+                myInput.onblur = function () {
+                    document.getElementById("message").style.display = "none";
+                }
+
+                // When the user starts to type something inside the password field
+                myInput.onkeyup = function () {
+                    validatePasswordInput();
+                    checkPasswordMatch();
+                }
+
+                // When the user starts to type something inside the confirm password field
+                confirmPasswordInput.onkeyup = function () {
+                    checkPasswordMatch();
+                }
+
+                // Function to validate password input and update the UI
+                function validatePasswordInput() {
+                    var password = myInput.value;
+
+                    // Validate lowercase letters
+                    var lowerCaseLetters = /[a-z]/g;
+                    if (password.match(lowerCaseLetters)) {
+                        letter.classList.remove("invalid");
+                        letter.classList.add("valid");
+                        letter.style.textDecoration = "line-through"; // Apply line-through
+                    } else {
+                        letter.classList.remove("valid");
+                        letter.classList.add("invalid");
+                        letter.style.textDecoration = "none"; // Remove line-through
+                    }
+
+                    // Validate capital letters
+                    var upperCaseLetters = /[A-Z]/g;
+                    if (password.match(upperCaseLetters)) {
+                        capital.classList.remove("invalid");
+                        capital.classList.add("valid");
+                        capital.style.textDecoration = "line-through"; // Apply line-through
+                    } else {
+                        capital.classList.remove("valid");
+                        capital.classList.add("invalid");
+                        capital.style.textDecoration = "none"; // Remove line-through
+                    }
+
+                    // Validate numbers
+                    var numbers = /[0-9]/g;
+                    if (password.match(numbers)) {
+                        number.classList.remove("invalid");
+                        number.classList.add("valid");
+                        number.style.textDecoration = "line-through"; // Apply line-through
+                    } else {
+                        number.classList.remove("valid");
+                        number.classList.add("invalid");
+                        number.style.textDecoration = "none"; // Remove line-through
+                    }
+
+                    // Validate symbols
+                    var symbols = /[~!@#$%^&*()_+{}\[\]:;<>,.?/-]/g;
+                    if (password.match(symbols)) {
+                        symbol.classList.remove("invalid");
+                        symbol.classList.add("valid");
+                        symbol.style.textDecoration = "line-through"; // Apply line-through
+                    } else {
+                        symbol.classList.remove("valid");
+                        symbol.classList.add("invalid");
+                        symbol.style.textDecoration = "none"; // Remove line-through
+                    }
+
+                    // Validate length
+                    if (password.length >= 10) {
+                        length.classList.remove("invalid");
+                        length.classList.add("valid");
+                        length.style.textDecoration = "line-through"; // Apply line-through
+                    } else {
+                        length.classList.remove("valid");
+                        length.classList.add("invalid");
+                        length.style.textDecoration = "none"; // Remove line-through
+                    }
+                }
+
+                // Function to check if password and confirm password match
+                function checkPasswordMatch() {
+                    if (myInput.value === confirmPasswordInput.value) {
+                        confirmMessage.classList.add("hidden");
+                    } else {
+                        confirmMessage.classList.remove("hidden");
+                    }
+                }
+            </script>
+            <%- include("templates/popup") %>
+                <%- include("templates/footer") %>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/custom.css" />
+    <script src="/js/script.js"></script>
+    <!-- <script src="/js/thread.js"></script> -->
+    <!-- <script src="/js/content.js"></script> -->
+    <script src="/js/popup.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/flowbite@1.4.7/dist/flowbite.js"></script>
+    <title>Calendar_project3</title>
+</head>
+<main class="flex justify-center items-center text-center p-8 h-full w-full bg-white">
+    <div class="container flex-col items-center">
+        <div class="flex justify-center overflow-x-auto">
+            <div class="w-full bg-white rounded-lg md:mt-0 sm:max-w-md">
+                <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                    <p class="font-bold mb-5 text-center">
+                        Log in with your account
+                    </p>
+                    <form id="loginForm" class="space-y-4 md:space-y-3" method="post" action="/loggingin">
+                        <div>
+                            <input type="username" name="username" id="username"
+                                class="bg-gray border text-gray-900 rounded-lg block w-full p-2.5"
+                                placeholder="Username" required="">
+                        </div>
+                        <div>
+                            <input type="password" name="password" id="password" placeholder="Password"
+                                class="border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5" required="">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-black text-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:text-white">Log
+                            in</button>
+                        <div>
+                            <a href="/signup">
+                                <p class="text-sm font-light text-gray-500">
+                                    Forgot password?
+                                </p>
+                            </a>
+                        </div>
+                    </form>
+                    <div class="flex items-center text-gray-400 my-4">
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="px-4">or</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-light text-gray-500">
+                            Don’t have an account yet? <a href="/signup" class="text-blue-500 hover:underline">Sign
+                                up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.getElementById("loginForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const username = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+
+                const response = await fetch("/loggingin", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const resultText = await response.text();
+
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    showPopup(resultText);
+                }
+            });
+        </script>
+        <%- include("templates/popup") %>
+            <%- include("templates/footer") %>

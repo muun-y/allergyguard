@@ -1,0 +1,147 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+        <div class="p-4 grid gap-y-2  break-words whitespace-normal">
+            <div class=" flex w-full mb-4">
+                <form class="w-full ">
+                    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
+                    <div class="relative">
+                        <div class="pl-6 absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input type="search" id="default-search"
+                            class="block w-full py-3 pl-12 ps-10 pr-6 text-sm text-gray-900 border border-gray-300 rounded-full bg-gray-50"
+                            placeholder="Enter '@' followed by a username to search for users." required
+                            oninput="handleSearch(this.value)" />
+                    </div>
+                </form>
+            </div>
+            <!-- <p class="text-gray-500 text-sm italic text-center mb-4">
+                Enter "@" followed by a username to search for users.
+            </p> -->
+            <div>
+                <p id="user-search-title" class="hidden text-sm font-semibold text-gray-400 mb-4">Users</p>
+                <div id="user-search-results"></div>
+                <p id="thread-search-title" class="hidden text-sm font-semibold text-gray-400 mb-4">Threads</p>
+                <div id="thread-search-results"></div>
+                <p id="comment-search-title" class="hidden text-sm font-semibold text-gray-400 my-4">Comments</p>
+                <div id="comment-search-results"></div>
+            </div>
+        </div>
+
+        <!-- User template -->
+        <template id="user-template">
+            <div class="flex mb-4">
+                <div>
+                    <img src="" alt="" class="profile-img w-10 h-10 rounded-full me-3" />
+                    <svg class="placeholder-img w-10 h-10 me-3 text-gray-200 hidden" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                    </svg>
+                </div>
+                <div class="w-full">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-semibold username"></p>
+                            <p class="text-sm text-gray-500 bio"></p>
+                        </div>
+                        <button
+                            class="font-semibold rounded-lg text-sm px-5 py-1 text-center border-2 follow-button">Follow</button>
+                    </div>
+                    <div class="my-4 text-sm text-gray-500 followers-count"></div>
+                    <hr />
+                </div>
+            </div>
+        </template>
+
+        <template id="thread-template">
+            <div role="status" class="py-4 border-b-2 thread-container">
+                <a href="#" class="block thread-link">
+                    <div class="flex items-start mb-4">
+                        <div class="flex-shrink-0 w-10 h-10">
+                            <img src="" alt="Profile Image" class="w-10 h-10 me-3 rounded-full profile-img" />
+                            <svg class="w-10 h-10 me-3 text-gray-200 placeholder-img hidden" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <p class="username">
+                                Username
+                                <span class="ml-3 text-gray-300 created-at text-sm">Date</span>
+                            </p>
+                            <p class="content  break-all break-words whitespace-normal">Thread content goes here...</p>
+                        </div>
+                    </div>
+                    <div class="ml-14">
+                        <!-- Display image -->
+                        <div class="mb-4 bg-gray-300 rounded overflow-hidden thread-image-container hidden">
+                            <img src="" alt="Thread Image" class="w-full h-auto object-cover rounded thread-img" />
+                        </div>
+                        <!-- Like and comment section -->
+                        <div class="inline-flex gap-x-2">
+                            <!-- Like -->
+                            <div class="inline-flex gap-x-1 pointer">
+                                <svg aria-label="Like"
+                                    class="like-icon flex-shrink-0 w-5 h-5 transition duration-75 cursor-pointer"
+                                    role="img" viewBox="0 0 18 18" style="fill: white; stroke: black;">
+                                    <title>Like</title>
+                                    <path
+                                        d="M1.34375 7.53125L1.34375 7.54043C1.34374 8.04211 1.34372 8.76295 1.6611 9.65585C1.9795 10.5516 2.60026 11.5779 3.77681 12.7544C5.59273 14.5704 7.58105 16.0215 8.33387 16.5497C8.73525 16.8313 9.26573 16.8313 9.66705 16.5496C10.4197 16.0213 12.4074 14.5703 14.2232 12.7544C15.3997 11.5779 16.0205 10.5516 16.3389 9.65585C16.6563 8.76296 16.6563 8.04211 16.6562 7.54043V7.53125C16.6562 5.23466 15.0849 3.25 12.6562 3.25C11.5214 3.25 10.6433 3.78244 9.99228 4.45476C9.59009 4.87012 9.26356 5.3491 9 5.81533C8.73645 5.3491 8.40991 4.87012 8.00772 4.45476C7.35672 3.78244 6.47861 3.25 5.34375 3.25C2.9151 3.25 1.34375 5.23466 1.34375 7.53125Z"
+                                        stroke-width="1.25"></path>
+                                </svg>
+                                <p class="like-count text-sm text-black">0</p>
+                            </div>
+                            <!-- Comment -->
+                            <div class="inline-flex gap-x-1 pointer">
+                                <a class="open-comment-modal" href="#">
+                                    <svg aria-label="Comment" role="img" viewBox="0 0 18 18"
+                                        class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75"
+                                        style="--fill: currentColor; --height: 20px; --width: 20px;">
+                                        <title>Comment</title>
+                                        <path
+                                            d="M15.376 13.2177L16.2861 16.7955L12.7106 15.8848C12.6781 15.8848 12.6131 15.8848 12.5806 15.8848C11.3779 16.5678 9.94767 16.8931 8.41995 16.7955C4.94194 16.5353 2.08152 13.7381 1.72397 10.2578C1.2689 5.63919 5.13697 1.76863 9.75264 2.22399C13.2307 2.58177 16.0261 5.41151 16.2861 8.92429C16.4161 10.453 16.0586 11.8841 15.376 13.0876C15.376 13.1526 15.376 13.1852 15.376 13.2177Z"
+                                            stroke-linejoin="round" stroke-width="1.25" stroke="black" fill="white">
+                                        </path>
+                                    </svg>
+                                </a>
+                                <p class="comment-count text-sm">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </template>
+
+
+        <template id="comment-template">
+            <div role="status" class="py-4 border-b-2 comment-container">
+                <div class="flex items-start mb-4">
+                    <div class="flex-shrink-0 w-10 h-10">
+                        <img src="" alt="Profile Image" class="w-10 h-10 me-3 rounded-full profile-img" />
+                        <svg class="w-10 h-10 me-3 text-gray-200 placeholder-img hidden" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="username">
+                            Username
+                            <span class="ml-3 text-gray-300 created-at text-sm">Date</span>
+                        </p>
+                        <p class="content break-all break-words whitespace-normal">Comment content goes here...</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+
+        </div>
+        </div>
+        <%- include("templates/footer") %>

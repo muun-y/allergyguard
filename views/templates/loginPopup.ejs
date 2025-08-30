@@ -1,0 +1,65 @@
+<div id="login-modal" tabindex="-1" aria-hidden="true"
+    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+                <div>
+                    <button type="button"
+                        class="text-gray-400 bg-transparent rounded-lg text-sm h-8 w-8 ms-auto inline-flex justify-center items-center"
+                        data-modal-toggle="login-modal">
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <div class="flex flex-1 justify-center">
+                    <svg aria-label="Comment" role="img" viewBox="0 0 41 40" class="w-10 h-10"
+                        style="--fill: transparent; --height: 48px; --width: 48px;">
+                        <title>Comment</title>
+                        <path clip-rule="evenodd"
+                            d="M34.6688 28.2615L36.6913 36.2122L28.7457 34.1884C28.6735 34.1884 28.529 34.1884 28.4568 34.1884C25.7842 35.7063 22.6059 36.4291 19.211 36.2122C11.4821 35.634 5.12559 29.418 4.33103 21.6841C3.31978 11.4204 11.9155 2.81918 22.1725 3.83109C29.9014 4.62616 36.1135 10.9145 36.6913 18.7206C36.9803 22.1178 36.1857 25.2981 34.6688 27.9724C34.6688 28.117 34.6688 28.1892 34.6688 28.2615Z"
+                            fill-rule="evenodd" stroke="url(#paint0_linear_4272_8415)" stroke-linejoin="round"
+                            stroke-width="3.33333" fill="white">
+                        </path>
+                        <defs>
+                            <linearGradient gradientUnits="userSpaceOnUse" id="paint0_linear_4272_8415" x1="4.25"
+                                x2="36.75" y1="36.25" y2="3.75">
+                                <stop stop-color="#FFD600"></stop>
+                                <stop offset="0.239583" stop-color="#FF7A00"></stop>
+                                <stop offset="0.489583" stop-color="#FF0069"></stop>
+                                <stop offset="0.75" stop-color="#D300C5"></stop>
+                                <stop offset="1" stop-color="#7638FA"></stop>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="text-center">
+                    <h1>Sign up</h1>
+                    <p>Join Threads</p>
+                    <ul class="space-y-4 mb-4">
+                        <li>
+                            <input type="radio" id="job-1" name="job" value="job-1" class="hidden peer" required />
+                            <label for="job-1"
+                                class="inline-flex items-center justify-between w-full p-5 text-gray-900 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-500 dark:peer-checked:text-blue-500 peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-900 hover:bg-gray-100">
+                                <div class="block">
+                                    <a href="login">
+                                        <div class="w-full text-lg font-semibold">Continue with login</div>
+                                    </a>
+                                </div>
+                                <svg class="w-4 h-4 ms-3 rtl:rotate-180 text-gray-500 dark:text-gray-400"
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 14 10">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                </svg>
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

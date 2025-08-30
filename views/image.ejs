@@ -1,0 +1,16 @@
+<%- include("templates/header") %>
+
+    <%- include("templates/navbar") %>
+        <div class="flex flex-col">
+            <h1>Image</h1>
+            <img src="<%= imageUrl %>" alt="Image" style="max-width: 100%; height: auto;">
+
+            <div>
+                <input type="text" value="<%= imageUrl %>" id="image-url" readonly style="width: 80%;">
+                <button onclick="copyToClipboard()">Copy Image URL</button>
+            </div>
+            <%= user.username %>
+                </h1>
+        </div>
+        </div>
+        <%- include("templates/footer") %>

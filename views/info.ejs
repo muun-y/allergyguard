@@ -1,0 +1,46 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+
+        <div class="flex flex-col w-full text-wrap">
+            <% if (content.type==='link' ) { %>
+                <h1 class="text-base md:text-3xl md:font-bold mb-5 text-center  w-full break-words whitespace-normal">
+                    You will automatically be redirected to
+                    <span class="underline text-gray-500">
+                        <%= content.original_url %>
+                    </span> in <span className="text-red-600" id="countdown">5</span> seconds
+                </h1>
+                <script>
+                    let countdown = 5;
+                    const countdownElement = document.getElementById("countdown");
+                    countdownElement.classList.add("text-red-500");
+
+                    const countdownTimer = setInterval(function () {
+                        countdown--;
+                        countdownElement.textContent = countdown;
+
+                        if (countdown <= 0) {
+                            clearInterval(countdownTimer);
+                            window.location.href = "<%= content.original_url %>";
+                        }
+                    }, 1000);
+                </script>
+                <% } else if (content.type==='image' ) { %>
+                    <h1 class="text-base md:text-3xl md:font-bold mb-5 text-center text-gray-500">Here is your image:
+                    </h1>
+                    <img src="<%= content.original_url %>" alt="Image" class="p-5" />
+                    <% } else if (content.type==='text' ) { %>
+                        <h1 class="text-base md:text-3xl md:font-bold mb-5 text-center text-gray-500">Here is your text:
+                        </h1>
+                        <div class="w-full break-words whitespace-normal">
+                            <p class="mt-5">
+                                <%= content.text %>
+                            </p>
+                        </div>
+
+                        <% } else { %>
+                            <h1 class="text-base md:text-3xl md:font-bold mb-5 text-center text-gray-500">Unknown
+                                content type</h1>
+                            <% } %>
+        </div>
+
+        <%- include("templates/footer") %>

@@ -1,0 +1,43 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+
+        <div class="p-4">
+            <!-- Not logged in -->
+            <% if (!isAuthenticated) { %>
+                <div class="h-screen flex justify-center items-center">
+                    <a href="/login"
+                        class="px-6 py-3 bg-gray-500 text-white text-xl font-bold rounded shadow hover:bg-blue-600 transition duration-200">
+                        Login
+                    </a>
+                </div>
+                <% } else { %>
+                    <!-- logged in -->
+                    <div>
+                        <!-- navigation tab -->
+                        <div class="flex justify-center items-center gap-x-4 mb-6">
+                            <button class="tab-button px-4 py-2 border rounded focus:bg-gray-200" data-tab="past">Past
+                                Events</button>
+                            <button class="tab-button px-4 py-2 border rounded focus:bg-gray-200"
+                                data-tab="deleted">Deleted Events</button>
+                        </div>
+
+                        <!-- date selector -->
+                        <!-- <div id="date-selector-container" class="flex items-center justify-center gap-x-4 mb-6">
+                            <button id="prev-date" class="p-2 bg-gray-200 rounded hover:bg-gray-300">&lt;</button>
+                            <h2 id="selected-date" class="text-lg font-bold">Nov 9, 2032</h2>
+                            <button id="next-date" class="p-2 bg-gray-200 rounded hover:bg-gray-300">&gt;</button>
+                        </div> -->
+
+                        <!-- tab contents -->
+                        <div id="tab-content" class="space-y-4">
+                            <div id="past-tab" class="tab-pane hidden">
+                                <p class="text-center text-gray-500">Loading Past Events...</p>
+                            </div>
+                            <div id="deleted-tab" class="tab-pane hidden">
+                                <p class="text-center text-gray-500">Loading Deleted Events...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+        </div>
+        <%- include("templates/footer") %>
