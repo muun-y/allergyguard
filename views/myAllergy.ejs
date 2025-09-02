@@ -1,0 +1,105 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+
+        <div class="p-4">
+            <!-- Not logged in -->
+            <% if (!isAuthenticated) { %>
+                <div class="h-screen flex flex-col justify-center items-center text-center">
+                    <h1 class="text-3xl font-bold mb-4">Welcome to AllergyGuard</h1>
+                    <p class="text-lg text-gray-700 mb-6">
+                        Register your allergens, scan food labels with OCR, and get instant alerts for risky
+                        ingredients. <br />
+                        Manage your list and review scan history—anytime, anywhere.
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        Continue with <a href="/login" class="text-blue-500 hover:underline">Login</a>
+                    </p>
+
+                    <div class="flex items-center text-gray-400 my-4">
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="px-4">or</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
+                    </div>
+
+                    <p class="text-sm text-gray-500">
+                        Don’t have an account yet? <a href="/signup" class="text-blue-500 hover:underline">Sign up</a>
+                    </p>
+                </div>
+
+                <% } else { %>
+                    <!-- Logged in: My Allergy (front-only markup) -->
+                    <section class="max-w-3xl mx-auto space-y-6">
+                        <header>
+                            <h2 class="text-2xl font-semibold">My Allergy</h2>
+                            <p class="text-sm text-gray-600">Search the master list, add to your allergies, or remove
+                                items.</p>
+                        </header>
+
+                        <!-- Search / Add (no JS wiring yet) -->
+                        <div class="space-y-3">
+                            <label for="allergen-search" class="block text-sm font-medium">Search allergen</label>
+                            <div class="relative">
+                                <input id="allergen-search" name="query" type="text"
+                                    placeholder="Type at least 2 characters (e.g., peanut)"
+                                    class="border rounded-md p-2 w-full" autocomplete="off" />
+                                <!-- Suggestions dropdown (static container; populate later) -->
+                                <ul id="suggestions"
+                                    class="absolute z-10 mt-1 w-full bg-white border rounded-md shadow max-h-60 overflow-auto hidden">
+                                    <!-- <li class="px-3 py-2 cursor-pointer hover:bg-gray-100">peanut (high)</li> -->
+                                </ul>
+                            </div>
+
+                            <!-- Add typed item (disabled by default; enable via JS later) -->
+                            <div class="flex items-center gap-2">
+                                <button id="add-typed" class="px-3 py-2 text-sm border rounded disabled:opacity-50"
+                                    disabled type="button">
+                                    Add “<span id="typed-preview"></span>”
+                                </button>
+                                <span class="text-xs text-gray-500">Pick a suggestion or add the typed text.</span>
+                            </div>
+
+                            <!-- Status / helper text -->
+                            <p id="helper-msg" class="text-sm text-gray-600"></p>
+                        </div>
+
+                        <!-- Current list -->
+                        <div>
+                            <h3 class="text-lg font-medium mb-2">Your allergies</h3>
+
+                            <!-- Empty state (toggle via server or JS later) -->
+                            <% if (typeof allergies==='undefined' || !allergies || allergies.length===0) { %>
+                                <div class="text-sm text-gray-500">No allergies added yet.</div>
+                                <% } else { %>
+                                    <ul class="list-disc pl-6 space-y-1">
+                                        <% allergies.forEach(function(a){ %>
+                                            <li class="flex items-center gap-3">
+                                                <span>
+                                                    <%= a.allergenName %>
+                                                </span>
+
+                                                <!-- Delete (front-only; wire up action or JS later) -->
+                                                <!-- Option A: button for JS modal -->
+                                                <button class="text-red-600 underline text-sm" type="button"
+                                                    data-role="delete" data-name="<%= a.allergenName %>"
+                                                    data-modal-target="deleteModal">
+                                                    delete
+                                                </button>
+
+                                                <!-- Option B (commented): form post to REST endpoint when ready -->
+                                                <!--
+                <form method="post" action="/api/me/allergies/<%= encodeURIComponent(a.allergenName) %>?_method=DELETE">
+                  <button class="text-red-600 underline text-sm" type="submit">delete</button>
+                </form>
+                -->
+                                            </li>
+                                            <% }) %>
+                                    </ul>
+                                    <% } %>
+                        </div>
+                    </section>
+                    <% } %>
+        </div>
+
+        <%- include("templates/deleteModal") %>
+            <%- include("templates/footer") %>

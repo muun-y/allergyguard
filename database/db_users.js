@@ -45,11 +45,12 @@ async function createUser(postData) {
 // Get a user
 async function getUser(postData) {
   let getUserSQL = `
-    SELECT u.user_id, u.username, i.url AS profile_img, u.password_hash
-    FROM user u
-    LEFT JOIN image i ON u.user_id = i.user_id
-    WHERE u.username = :username AND u.is_active = 1;
+    SELECT u.user_id, u.username, u.password_hash
+    FROM user u;
   `;
+
+  // LEFT JOIN image i ON u.user_id = i.user_id
+  //   WHERE u.username = :username AND u.is_active = 1
 
   let params = {
     username: postData.username,

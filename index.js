@@ -19,10 +19,10 @@ const saltRounds = 12;
 const shortid = require("shortid");
 
 //db connection
-// const database = include("databaseConnection");
-// const db_utils = include("database/db_utils");
-// const create_tables = include("database/create_tables");
-// const db_users = include("database/db_users");
+const database = include("databaseConnection");
+const db_utils = include("database/db_utils");
+const create_tables = include("database/create_tables");
+const db_users = include("database/db_users");
 // const db_follows = include("database/db_follows");
 // const db_events = include("database/db_events");
 // const db_notifications = include("database/db_notifications");
@@ -270,7 +270,7 @@ app.post("/loggingin", async (req, res) => {
       req.session.username = username;
       req.session.user_id = user.user_id;
       req.session.email = user.email;
-      req.session.profile_img = user.profile_img;
+      // req.session.profile_img = user.profile_img;
       req.session.cookie.maxAge = expireTime;
       return res.status(200).send("Login success");
     } else {
@@ -288,34 +288,41 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
-//past and deleted events
-app.use("/pastEvent", sessionValidation);
-app.get("/pastEvent", async (req, res) => {
+//my allergy page
+// app.use("/myAllergy", sessionValidation);
+app.get("/myAllergy", async (req, res) => {
   const isAuthenticated = req.session.authenticated || false; // Check authentication
-  res.render("past", { isAuthenticated });
+  res.render("myAllergy", { isAuthenticated });
 });
 
-app.get("/api/past", async (req, res) => {
-  const { tab, date } = req.query;
+//past and deleted events
+// app.use("/pastEvent", sessionValidation);
+// app.get("/pastEvent", async (req, res) => {
+//   const isAuthenticated = req.session.authenticated || false; // Check authentication
+//   res.render("past", { isAuthenticated });
+// });
 
-  try {
-    if (!req.session || !req.session.user_id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+// app.get("/api/past", async (req, res) => {
+//   const { tab, date } = req.query;
 
-    const userId = req.session.user_id;
+//   try {
+//     if (!req.session || !req.session.user_id) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
 
-    const events = await db_events.getEventsByTab(tab, date, userId);
+//     const userId = req.session.user_id;
 
-    console.log(`Fetched events for tab: ${tab}, date: ${date}`, events);
-    res.json({ events });
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to fetch events.", error: error.message });
-  }
-});
+//     const events = await db_events.getEventsByTab(tab, date, userId);
+
+//     console.log(`Fetched events for tab: ${tab}, date: ${date}`, events);
+//     res.json({ events });
+//   } catch (error) {
+//     console.error("Error fetching events:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Failed to fetch events.", error: error.message });
+//   }
+// });
 
 //Profile
 app.use("/profile", sessionValidation);
@@ -339,44 +346,6 @@ app.get("/profile", async (req, res) => {
     res.status(500).send("Failed to load profile");
   }
 });
-
-// Add like
-// app.use("/like", sessionValidation);
-// app.post("/like", async (req, res) => {
-//   const thread_id = req.body.thread_id;
-//   const comment_id = req.body.comment_id;
-//   const liked = req.body.liked;
-//   const user_id = req.session.user_id;
-
-//   try {
-//     if (liked) {
-//       // Add a new like if it doesn't exist
-//       const [existingLike] = await db_likes.findLike({
-//         thread_id: thread_id || null,
-//         comment_id: comment_id || null,
-//         user_id: user_id,
-//       });
-
-//       if (!existingLike) {
-//         await db_likes.addLike({
-//           thread_id: thread_id || null,
-//           comment_id: comment_id || null,
-//           user_id: user_id,
-//         });
-//       }
-//     } else {
-//       await db_likes.removeLike({
-//         thread_id: thread_id || null,
-//         comment_id: comment_id || null,
-//         user_id: user_id,
-//       });
-//     }
-//     res.json({ success: true });
-//   } catch (error) {
-//     console.error("Error updating like status:", error);
-//     res.json({ success: false });
-//   }
-// });
 
 // Search
 app.get("/search", (req, res) => {
@@ -418,39 +387,6 @@ app.get("/search/users", async (req, res) => {
   } catch (err) {
     console.log("Error searching for users:", err);
     res.status(500).send("Error searching for users");
-  }
-});
-
-// followers.js (또는 관련 라우트 파일)
-app.get("/api/followers/count", async (req, res) => {
-  const userId = req.session.user_id; // 현재 로그인한 사용자 ID
-
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  try {
-    const followersCount = await db_follows.getFollowersCount(userId); // DB에서 팔로워 수 조회
-    res.json({ count: followersCount });
-  } catch (error) {
-    console.error("Error fetching followers count:", error);
-    res.status(500).json({ error: "Failed to fetch followers count" });
-  }
-});
-
-app.get("/api/following", async (req, res) => {
-  const userId = req.session.user_id;
-
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  try {
-    const following = await db_follows.getFollowingList(userId); // 팔로우 리스트 가져오는 함수
-    res.json(following);
-  } catch (error) {
-    console.error("Error fetching following list:", error);
-    res.status(500).json({ error: "Failed to fetch following list." });
   }
 });
 
@@ -534,165 +470,165 @@ app.post("/unfollow", async (req, res) => {
 // });
 
 //create new event
-app.use("/create-event", sessionValidation);
-app.post("/create-event", async (req, res) => {
-  const { title, start_date, start_time, end_date, end_time, guests, color } =
-    req.body;
-  const user_id = req.session.user_id;
+// app.use("/create-event", sessionValidation);
+// app.post("/create-event", async (req, res) => {
+//   const { title, start_date, start_time, end_date, end_time, guests, color } =
+//     req.body;
+//   const user_id = req.session.user_id;
 
-  // 필수 필드 유효성 검사
-  if (!title || !start_date || !start_time || !end_date || !end_time) {
-    return res.status(400).send({
-      message:
-        "All required fields (title, start/end date, start/end time) must be filled.",
-    });
-  }
+//   // 필수 필드 유효성 검사
+//   if (!title || !start_date || !start_time || !end_date || !end_time) {
+//     return res.status(400).send({
+//       message:
+//         "All required fields (title, start/end date, start/end time) must be filled.",
+//     });
+//   }
 
-  const start_datetime = new Date(`${start_date}T${start_time}`);
-  const end_datetime = new Date(`${end_date}T${end_time}`);
+//   const start_datetime = new Date(`${start_date}T${start_time}`);
+//   const end_datetime = new Date(`${end_date}T${end_time}`);
 
-  if (start_datetime >= end_datetime) {
-    return res.status(400).send({
-      message: "End date/time must be after start date/time.",
-    });
-  }
+//   if (start_datetime >= end_datetime) {
+//     return res.status(400).send({
+//       message: "End date/time must be after start date/time.",
+//     });
+//   }
 
-  let guestsEmailList = [];
-  if (guests) {
-    guestsEmailList = guests.split(",").map((email) => email.trim());
-  }
+//   let guestsEmailList = [];
+//   if (guests) {
+//     guestsEmailList = guests.split(",").map((email) => email.trim());
+//   }
 
-  const eventData = {
-    title,
-    start_datetime,
-    end_datetime,
-    color: color || "#FFFFFF",
-    user_id,
-  };
+//   const eventData = {
+//     title,
+//     start_datetime,
+//     end_datetime,
+//     color: color || "#FFFFFF",
+//     user_id,
+//   };
 
-  try {
-    const insertResult = await db_events.insertEvent(eventData);
+//   try {
+//     const insertResult = await db_events.insertEvent(eventData);
 
-    if (!insertResult.success) {
-      throw new Error(insertResult.error || "Unknown error occurred.");
-    }
+//     if (!insertResult.success) {
+//       throw new Error(insertResult.error || "Unknown error occurred.");
+//     }
 
-    const eventId = insertResult.eventId;
+//     const eventId = insertResult.eventId;
 
-    if (guestsEmailList.length > 0) {
-      for (const guestEmail of guestsEmailList) {
-        try {
-          const guest = await db_users.getUserByEmail(guestEmail);
-          if (!guest) {
-            console.warn(`User with email ${guestEmail} not found.`);
-            continue;
-          }
+//     if (guestsEmailList.length > 0) {
+//       for (const guestEmail of guestsEmailList) {
+//         try {
+//           const guest = await db_users.getUserByEmail(guestEmail);
+//           if (!guest) {
+//             console.warn(`User with email ${guestEmail} not found.`);
+//             continue;
+//           }
 
-          const notificationData = {
-            sender_id: user_id,
-            receiver_id: guest.user_id,
-            event_id: eventId,
-            message: `You have been invited to the event: ${title}`,
-          };
+//           const notificationData = {
+//             sender_id: user_id,
+//             receiver_id: guest.user_id,
+//             event_id: eventId,
+//             message: `You have been invited to the event: ${title}`,
+//           };
 
-          await db_notifications.createNotification(notificationData);
-        } catch (err) {
-          console.error(`Error sending notification to ${guestEmail}:`, err);
-        }
-      }
-    }
+//           await db_notifications.createNotification(notificationData);
+//         } catch (err) {
+//           console.error(`Error sending notification to ${guestEmail}:`, err);
+//         }
+//       }
+//     }
 
-    res.redirect("/");
-  } catch (error) {
-    console.error("Error creating event:", error);
-    res
-      .status(500)
-      .send({ message: "Failed to create event.", error: error.message });
-  }
-});
+//     res.redirect("/");
+//   } catch (error) {
+//     console.error("Error creating event:", error);
+//     res
+//       .status(500)
+//       .send({ message: "Failed to create event.", error: error.message });
+//   }
+// });
 
 // Route to get past events
-app.use("/pastEvent", sessionValidation);
-app.get("/pastEvent", async (req, res) => {
-  const isAuthenticated = req.session.authenticated || false; // Check authentication
+// app.use("/pastEvent", sessionValidation);
+// app.get("/pastEvent", async (req, res) => {
+//   const isAuthenticated = req.session.authenticated || false; // Check authentication
 
-  // Render the pastEvent view with fetched data
-  res.render("pastEvent", { isAuthenticated });
-});
+//   // Render the pastEvent view with fetched data
+//   res.render("pastEvent", { isAuthenticated });
+// });
 
-app.get("/api/notifications/count", async (req, res) => {
-  const userId = req.session.user_id;
+// app.get("/api/notifications/count", async (req, res) => {
+//   const userId = req.session.user_id;
 
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+//   if (!userId) {
+//     return res.status(401).json({ error: "Unauthorized" });
+//   }
 
-  try {
-    const count = await db_notifications.getNotificationCount(userId);
-    res.json({ count });
-  } catch (error) {
-    console.error("Error fetching notification count:", error);
-    res.status(500).json({ error: "Failed to fetch notification count." });
-  }
-});
+//   try {
+//     const count = await db_notifications.getNotificationCount(userId);
+//     res.json({ count });
+//   } catch (error) {
+//     console.error("Error fetching notification count:", error);
+//     res.status(500).json({ error: "Failed to fetch notification count." });
+//   }
+// });
 
-app.use("/notifications", sessionValidation);
-app.get("/notifications", async (req, res) => {
-  const isAuthenticated = req.session.authenticated || false; // Check authentication
+// app.use("/notifications", sessionValidation);
+// app.get("/notifications", async (req, res) => {
+//   const isAuthenticated = req.session.authenticated || false; // Check authentication
 
-  // Render the pastEvent view with fetched data
-  res.render("notifications", { isAuthenticated });
-});
+//   // Render the pastEvent view with fetched data
+//   res.render("notifications", { isAuthenticated });
+// });
 
-app.get("/api/notifications", async (req, res) => {
-  const userId = req.session.user_id;
+// app.get("/api/notifications", async (req, res) => {
+//   const userId = req.session.user_id;
 
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+//   if (!userId) {
+//     return res.status(401).json({ error: "Unauthorized" });
+//   }
 
-  try {
-    const notifications = await db_notifications.getNotificationsForUser(
-      userId
-    );
-    res.json({ notifications });
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
-    res.status(500).json({ error: "Failed to fetch notifications." });
-  }
-});
+//   try {
+//     const notifications = await db_notifications.getNotificationsForUser(
+//       userId
+//     );
+//     res.json({ notifications });
+//   } catch (error) {
+//     console.error("Error fetching notifications:", error);
+//     res.status(500).json({ error: "Failed to fetch notifications." });
+//   }
+// });
 
-app.post("/api/notifications/:notificationId/accept", async (req, res) => {
-  const notificationId = req.params.notificationId;
+// app.post("/api/notifications/:notificationId/accept", async (req, res) => {
+//   const notificationId = req.params.notificationId;
 
-  try {
-    const result = await db_notifications.acceptNotification(notificationId);
-    if (result) {
-      res.status(200).send({ message: "Invitation accepted" });
-    } else {
-      res.status(400).send({ message: "Failed to accept invitation" });
-    }
-  } catch (error) {
-    console.error("Error accepting invitation:", error);
-    res.status(500).send({ message: "Server error" });
-  }
-});
+//   try {
+//     const result = await db_notifications.acceptNotification(notificationId);
+//     if (result) {
+//       res.status(200).send({ message: "Invitation accepted" });
+//     } else {
+//       res.status(400).send({ message: "Failed to accept invitation" });
+//     }
+//   } catch (error) {
+//     console.error("Error accepting invitation:", error);
+//     res.status(500).send({ message: "Server error" });
+//   }
+// });
 
-app.post("/api/notifications/:notificationId/decline", async (req, res) => {
-  const notificationId = req.params.notificationId;
+// app.post("/api/notifications/:notificationId/decline", async (req, res) => {
+//   const notificationId = req.params.notificationId;
 
-  try {
-    const result = await db_notifications.declineNotification(notificationId);
-    if (result) {
-      res.status(200).send({ message: "Invitation declined" });
-    } else {
-      res.status(400).send({ message: "Failed to decline invitation" });
-    }
-  } catch (error) {
-    console.error("Error declining invitation:", error);
-    res.status(500).send({ message: "Server error" });
-  }
-});
+//   try {
+//     const result = await db_notifications.declineNotification(notificationId);
+//     if (result) {
+//       res.status(200).send({ message: "Invitation declined" });
+//     } else {
+//       res.status(400).send({ message: "Failed to decline invitation" });
+//     }
+//   } catch (error) {
+//     console.error("Error declining invitation:", error);
+//     res.status(500).send({ message: "Server error" });
+//   }
+// });
 
 // Serve static files
 app.use(express.static(__dirname + "/public"));
