@@ -2,10 +2,22 @@ require("./utils");
 require("dotenv").config();
 
 const express = require("express");
+const cookieParser = require("cookie-parser");
+const path = require("path");
+const port = process.env.PORT || 3000;
+const crypto = require("crypto");
+const { v4: uuid } = require("uuid");
+const multer = require("multer");
+const Joi = require("joi");
+const cloudinary = require("cloudinary");
 
 // Session management
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // Multer for file uploads
 // const fs = require("fs");
@@ -42,19 +54,13 @@ const expireTime = 24 * 60 * 60 * 1000; //expires after 1 day  (hours * minutes 
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 /* END secret section */
 
+/* Express setup */
 app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
-const port = process.env.PORT || 3000;
-
-const crypto = require("crypto");
-const { v4: uuid } = require("uuid");
-// const cloudinary = require("cloudinary").v2;
-const multer = require("multer");
-const path = require("path");
-const Joi = require("joi");
-const cloudinary = require("cloudinary");
 // const e = require("express");
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -73,49 +79,38 @@ const upload = multer({ storage: storage });
 //   },
 // });
 
-app.use(
-  session({
-    secret: node_session_secret,
-    // store: mongoStore,
-    saveUninitialized: false,
-    resave: true,
-    cookie: {
-      secure: false, // Set to true if using HTTPS
-      maxAge: 3600000, // 1 hour in milliseconds
-    },
-    autoRemove: "interval",
-    autoRemoveInterval: 60, // Sessions older than 1 hour will be removed every minute
-    encrypt: true, // Enable encryption for session data (this is usually the default)
-  })
-);
+/* Middleware: Firebase Auth 보호 */
+async function checkAuth(req, res, next) {
+  const token = req.cookies.session;
+  if (!token) return res.redirect("/login");
 
-// Using middleware to pass session data to views
-app.use((req, res, next) => {
-  res.locals.username = req.session.username;
-  res.locals.authenticated = req.session.authenticated || false;
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.error("Auth error:", err);
+    return res.redirect("/login");
+  }
+}
+
+app.use(async (req, res, next) => {
+  if (req.cookies.session) {
+    try {
+      const decoded = await admin.auth().verifyIdToken(req.cookies.session);
+      res.locals.user = decoded; // 모든 EJS에서 user 사용 가능
+    } catch (err) {
+      res.locals.user = null;
+    }
+  } else {
+    res.locals.user = null;
+  }
   next();
 });
 
-function isValidSession(req) {
-  if (req.session.authenticated) {
-    return true;
-  }
-  return false;
-}
-
-function sessionValidation(req, res, next) {
-  if (!isValidSession(req)) {
-    req.session.destroy();
-    res.redirect("/login");
-    return;
-  } else {
-    next();
-  }
-}
-
 // Home
 app.get("/", (req, res) => {
-  const isAuthenticated = req.session.authenticated || false; // Check authentication
+  const isAuthenticated = !!req.cookies.session;
   res.render("index", { isAuthenticated });
 });
 
@@ -251,36 +246,36 @@ app.get("/login", (req, res) => {
 });
 
 // Logging in
-app.post("/loggingin", async (req, res) => {
-  let username = req.body.username;
-  let password = req.body.password;
+// app.post("/loggingin", async (req, res) => {
+//   let username = req.body.username;
+//   let password = req.body.password;
 
-  try {
-    let user = await db_users.getUser({
-      username: username,
-    });
+//   try {
+//     let user = await db_users.getUser({
+//       username: username,
+//     });
 
-    if (!user) {
-      return res.status(404).send("Invalid username or password");
-    }
+//     if (!user) {
+//       return res.status(404).send("Invalid username or password");
+//     }
 
-    // there should only be 1 user in the db that matches
-    if (bcrypt.compareSync(password, user.password_hash)) {
-      req.session.authenticated = true;
-      req.session.username = username;
-      req.session.user_id = user.user_id;
-      req.session.email = user.email;
-      // req.session.profile_img = user.profile_img;
-      req.session.cookie.maxAge = expireTime;
-      return res.status(200).send("Login success");
-    } else {
-      return res.status(404).send("Invalid username or password");
-    }
-  } catch (error) {
-    console.error("Login error:", error);
-    return res.status(500).send("Server error");
-  }
-});
+//     // there should only be 1 user in the db that matches
+//     if (bcrypt.compareSync(password, user.password_hash)) {
+//       req.session.authenticated = true;
+//       req.session.username = username;
+//       req.session.user_id = user.user_id;
+//       req.session.email = user.email;
+//       // req.session.profile_img = user.profile_img;
+//       req.session.cookie.maxAge = expireTime;
+//       return res.status(200).send("Login success");
+//     } else {
+//       return res.status(404).send("Invalid username or password");
+//     }
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     return res.status(500).send("Server error");
+//   }
+// });
 
 // Log out
 app.get("/logout", (req, res) => {
@@ -325,7 +320,7 @@ app.get("/myAllergy", async (req, res) => {
 // });
 
 //Profile
-app.use("/profile", sessionValidation);
+
 app.get("/profile", async (req, res) => {
   const userId = req.session.user_id;
 

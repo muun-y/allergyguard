@@ -1,9 +1,8 @@
 <%- include("templates/header") %>
     <%- include("templates/navbar") %>
-        <script src="/js/view.js"></script>
         <div class="p-4">
-            <!-- Not logged in -->
-            <% if (!isAuthenticated) { %>
+            <% if (!user) { %>
+                <!-- Not logged in -->
                 <div class="h-screen flex flex-col justify-center items-center text-center">
                     <!-- Application Overview -->
                     <h1 class="text-3xl font-bold mb-4">Welcome to Your Allergy Guard!</h1>
@@ -13,32 +12,36 @@
                         ingredients. <br />
                         Manage your list and review scan history—anytime, anywhere. <br />
                     </p>
+
                     <div>
                         <p class="text-sm font-light text-gray-500">
                             Continue with <a href="/login" class="text-blue-500 hover:underline">Login</a>
                         </p>
                     </div>
+
                     <div class="flex items-center text-gray-400 my-4">
                         <div class="flex-grow border-t border-gray-300"></div>
                         <span class="px-4">or</span>
                         <div class="flex-grow border-t border-gray-300"></div>
                     </div>
+
                     <div>
                         <p class="text-sm font-light text-gray-500">
                             Don’t have an account yet? <a href="/signup" class="text-blue-500 hover:underline">Sign
                                 up</a>
                         </p>
                     </div>
-                    </p>
                 </div>
+
                 <% } else { %>
 
-                    <!-- Logged-in Dashboard (front-only) -->
+                    <!-- Logged-in Dashboard -->
                     <section class="max-w-4xl mx-auto space-y-8">
 
-                        <!-- Simple greeting -->
+                        <!-- Greeting -->
                         <header>
-                            <h1 class="text-2xl font-bold">Hello, User</h1>
+                            <h1 class="text-2xl font-bold">Hello, <%= user.email %>
+                            </h1>
                             <p class="text-sm text-gray-500">Welcome back to AllergyGuard.</p>
                         </header>
 
@@ -49,7 +52,7 @@
                                 <a href="/myAllergy" class="text-blue-600 hover:underline text-sm">Manage</a>
                             </div>
 
-                            <!-- Static chips -->
+                            <!-- TODO: Replace with dynamic allergies -->
                             <ul class="flex flex-wrap gap-2">
                                 <li class="px-3 py-1 rounded-full bg-gray-100 border text-sm">Peanut</li>
                                 <li class="px-3 py-1 rounded-full bg-gray-100 border text-sm">Milk</li>
@@ -64,7 +67,7 @@
                                 <a href="/scan-history" class="text-blue-600 hover:underline text-sm">View all</a>
                             </div>
 
-                            <!-- Static history list -->
+                            <!-- TODO: Replace with dynamic history -->
                             <ul class="divide-y border rounded">
                                 <li class="p-3 flex items-center justify-between">
                                     <div>
