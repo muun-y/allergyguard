@@ -1,42 +1,28 @@
 const fs = require("fs");
-const csv = require("csv-parser");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const Allergen = require("../"); // model도 require로
+const db = require("../src/config/firebaseAdmin");
 
-dotenv.config();
+async function importAllergens() {
+  const raw = fs.readFileSync("./data/allergens.json", "utf8");
+  const allergens = JSON.parse(raw);
 
-const MONGO_URI = process.env.MONGODB_URL;
+  console.log("📦 Importing allergens...");
 
-async function main() {
-  await mongoose.connect(MONGO_URI);
-  console.log("✅ Connected to MongoDB");
+  for (const a of allergens) {
+    const clean = {
+      allergen: String(a.allergen).trim(),
+      category: String(a.category).trim(),
+      notes: String(a.notes).trim(),
+    };
 
-  const ops = [];
+    await db.collection("allergens").add(clean);
+    console.log("✅ Inserted:", clean.allergen);
+  }
 
-  fs.createReadStream("./data/allergens.csv")
-    .pipe(csv())
-    .on("data", (row) => {
-      ops.push({
-        updateOne: {
-          filter: { allergen: row.allergen },
-          update: { $set: row },
-          upsert: true,
-        },
-      });
-    })
-    .on("end", async () => {
-      if (ops.length > 0) {
-        await Allergen.bulkWrite(ops, { ordered: false });
-        console.log(`✅ Imported ${ops.length} allergens`);
-      } else {
-        console.log("⚠️ No rows found in CSV");
-      }
-      await mongoose.disconnect();
-    });
+  console.log(`✅ Imported ${allergens.length} allergens`);
+  process.exit(0);
 }
 
-main().catch((err) => {
+importAllergens().catch((err) => {
   console.error("❌ Error:", err);
   process.exit(1);
 });

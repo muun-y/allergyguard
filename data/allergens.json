@@ -1,0 +1,13 @@
+[
+    { "allergen": "Eggs", "category": "Protein", "notes": "Includes egg whites and yolk" },
+    { "allergen": "Milk", "category": "Dairy", "notes": "Includes cream, butter, cheese, yogurt" },
+    { "allergen": "Mustard", "category": "Spice", "notes": "Includes mustard seeds and products" },
+    { "allergen": "Peanuts", "category": "Nut", "notes": "Groundnuts; common in snacks and sauces" },
+    { "allergen": "Fish", "category": "Seafood", "notes": "Includes salmon, tuna, cod, etc." },
+    { "allergen": "Sesame seeds", "category": "Seed", "notes": "Found in breads, oils, tahini" },
+    { "allergen": "Soy", "category": "Legume", "notes": "Includes soybeans, tofu, soy sauce" },
+    { "allergen": "Sulphites", "category": "Additive", "notes": "Used as preservatives in dried fruit, wine" },
+    { "allergen": "Tree Nuts", "category": "Nut", "notes": "Includes almonds, walnuts, hazelnuts, cashews" },
+    { "allergen": "Wheat and Triticale", "category": "Grain", "notes": "Common in bread, pasta, flour" }
+  ]
+  
