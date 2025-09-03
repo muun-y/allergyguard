@@ -116,9 +116,11 @@ app.get("/", (req, res) => {
 
 // Sign up
 app.get("/signup", (req, res) => {
-  if (!isValidSession(req)) {
+  if (!res.locals.user) {
+    // logged in
     res.render("signup");
   } else {
+    // not logged in
     res.redirect("/");
   }
 });
@@ -140,107 +142,14 @@ app.get("/signup", (req, res) => {
 // });
 
 // signingUp
-app.post("/signingUp", upload.single("profile"), async (req, res) => {
-  let email = req.body.email;
-  let username = req.body.username;
-  let password = req.body.password;
-  let profile = req.file;
-
-  console.log("profile", profile);
-  console.log("username", username);
-  console.log("email", email);
-  console.log("password", password);
-
-  // Input validation
-  if (!email || !username || !password) {
-    return res.status(500).send("Please fill in all required fields.");
-  }
-
-  // Password validation >= 10 characters with upper/lowercase, numbers, symbols
-  const regexUpper = /[A-Z]/;
-  const regexLower = /[a-z]/;
-  const regexNumber = /[0-9]/;
-  const regexSymbol = /[$&+,:;=?@#|'<>.^*()%!-]/;
-
-  if (
-    password.length >= 10 &&
-    regexUpper.test(password) &&
-    regexLower.test(password) &&
-    regexNumber.test(password) &&
-    regexSymbol.test(password)
-  ) {
-    try {
-      // Check if username or email already exists
-      const existingUser = await db_users.checkUserExist({
-        email: email,
-        username: username,
-      });
-      // db_users.findUserByEmailOrUsername 함수는 email이나 username으로 사용자 검색을 수행함
-
-      if (existingUser) {
-        // If user with the same email or username exists
-        return res.status(400).send("Username or Email already exists.");
-      }
-
-      // Hash the password
-      const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-      let profileUrl = null;
-      if (profile) {
-        let image_uuid = uuid();
-        let buf64 = req.file.buffer.toString("base64");
-
-        try {
-          // profile image upload to Cloudinary
-          const result = await cloudinary.uploader.upload(
-            "data:image/octet-stream;base64," + buf64,
-            { folder: "user_profiles" }, // folder name
-            { public_id: image_uuid } // file name
-          );
-
-          if (!result.secure_url) {
-            return res.render("error", {
-              message: "Error uploading the image to Cloudinary",
-            });
-          }
-
-          profileUrl = result.secure_url; // URL to the uploaded image
-        } catch (err) {
-          console.error("Cloudinary upload error:", err);
-          return res.status(500).send("Failed to upload profile image.");
-        }
-      }
-
-      // Create new user if email and username are unique
-      const success = await db_users.createUser({
-        email,
-        username,
-        hashedPassword,
-        profile: profileUrl, // URL to the uploaded image (or null)
-      });
-
-      if (success) {
-        return res.status(200).send("Successfully created user.");
-      } else {
-        return res.status(500).send("Error creating the user.");
-      }
-    } catch (err) {
-      console.error("Database error:", err);
-      return res.status(500).send("Error saving the user to the database.");
-    }
-  } else {
-    // Password does not meet requirements
-    return res
-      .status(400)
-      .send("Invalid password. Must meet complexity requirements.");
-  }
-});
 
 // Login
 app.get("/login", (req, res) => {
-  if (!isValidSession(req)) {
+  if (!res.locals.user) {
+    // Not logged in
     res.render("login");
   } else {
+    // logged in
     res.redirect("/");
   }
 });

@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <title>AllergyGuard - Login</title>
+    <title>AllergyGuard</title>
 </head>
 
-<body class="flex justify-center items-center h-screen bg-gray-100">
+<body class="min-h-screen flex justify-center items-center bg-gray-100">
     <div class="w-full max-w-md bg-white rounded-lg shadow-md p-6">
-        <h1 class="font-bold text-xl text-center mb-6">Log in to AllergyGuard</h1>
+        <h1 class="font-bold text-xl text-center mb-6">Log in</h1>
 
         <form id="loginForm" class="space-y-4">
             <div>
@@ -35,46 +35,10 @@
         </div>
 
         <p class="text-sm text-center text-gray-500">
-            Don’t have an account yet? <a href="/signup" class="text-blue-500 hover:underline">Sign up</a>
+            Don’t have an account yet?
+            <a href="/signup" class="text-blue-500 hover:underline">Sign up</a>
         </p>
     </div>
+</body>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "<%= process.env.FIREBASE_API_KEY %>",
-            authDomain: "<%= process.env.FIREBASE_AUTH_DOMAIN %>",
-            projectId: "<%= process.env.FIREBASE_PROJECT_ID %>"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        document.getElementById("loginForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const token = await userCredential.user.getIdToken();
-
-                // 서버에 토큰 전송
-                await fetch("/sessionLogin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token })
-                });
-
-                window.location.href = "/";
-            } catch (err) {
-                alert("Login failed: " + err.message);
-            }
-        });
-    </script>
-
-    <%- include("templates/popup") %>
-        <%- include("templates/footer") %>
+</html>
