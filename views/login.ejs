@@ -39,6 +39,61 @@
             <a href="/signup" class="text-blue-500 hover:underline">Sign up</a>
         </p>
     </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "<%= process.env.FIREBASE_API_KEY %>",
+            authDomain: "<%= process.env.FIREBASE_AUTH_DOMAIN %>",
+            projectId: "<%= process.env.FIREBASE_PROJECT_ID %>"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    console.log("User info:", userData);
+
+                    alert(`✅ Welcome back, ${userData.username || user.email}!`);
+                    const token = await user.getIdToken();
+
+                    // 서버에 세션 생성 요청
+                    await fetch("/sessionLogin", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ token })
+                    });
+
+                    // 서버 세션 쿠키가 생겼으니 대시보드로 이동
+                    window.location.href = "/";
+                } else {
+                    alert("User info not found in Firestore.");
+                }
+            } catch (err) {
+                alert("❌ Login failed: " + err.message);
+            }
+        });
+    </script>
 </body>
 
 </html>

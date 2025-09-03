@@ -5,10 +5,8 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const path = require("path");
 const port = process.env.PORT || 3000;
-const crypto = require("crypto");
 const { v4: uuid } = require("uuid");
 const multer = require("multer");
-const Joi = require("joi");
 const cloudinary = require("cloudinary");
 
 // Session management
@@ -23,36 +21,11 @@ admin.initializeApp({
 // const fs = require("fs");
 // const uploadDir = path.join(__dirname, "/public/profile");
 
-// Hash passwords using BCrypt
-const bcrypt = require("bcrypt");
-const saltRounds = 12;
-
-// shorten url
-const shortid = require("shortid");
-
-//db connection
-const database = include("databaseConnection");
-const db_utils = include("database/db_utils");
-const create_tables = include("database/create_tables");
-const db_users = include("database/db_users");
-// const db_follows = include("database/db_follows");
-// const db_events = include("database/db_events");
-// const db_notifications = include("database/db_notifications");
-// const db_comments = include("database/db_comments");
-// const success = db_utils.printMySQLVersion();
-
 //reference of the express module
 const app = express();
 
-const expireTime = 24 * 60 * 60 * 1000; //expires after 1 day  (hours * minutes * seconds * millis)
-
-/* secret information section */
-// const mongodb_url = process.env.MONGODB_URL;
-// const mongodb_user = process.env.MONGODB_USER;
-// const mongodb_password = process.env.MONGODB_PASSWORD;
-// const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
-const node_session_secret = process.env.NODE_SESSION_SECRET;
-/* END secret section */
+//firestore instance
+const db = admin.firestore();
 
 /* Express setup */
 app.set("view engine", "ejs");
@@ -61,7 +34,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-// const e = require("express");
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_CLOUD_KEY,
@@ -72,20 +44,13 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// let mongoStore = MongoStore.create({
-//   mongoUrl: `${mongodb_url}`,
-//   crypto: {
-//     secret: mongodb_session_secret,
-//   },
-// });
-
-/* Middleware: Firebase Auth 보호 */
+/* Middleware: Firebase Auth protect */
 async function checkAuth(req, res, next) {
   const token = req.cookies.session;
   if (!token) return res.redirect("/login");
 
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
+    const decoded = await admin.auth().verifySessionCookie(token, true);
     req.user = decoded;
     next();
   } catch (err) {
@@ -97,8 +62,10 @@ async function checkAuth(req, res, next) {
 app.use(async (req, res, next) => {
   if (req.cookies.session) {
     try {
-      const decoded = await admin.auth().verifyIdToken(req.cookies.session);
-      res.locals.user = decoded; // 모든 EJS에서 user 사용 가능
+      const decoded = await admin
+        .auth()
+        .verifySessionCookie(sessionCookie, true);
+      res.locals.user = decoded;
     } catch (err) {
       res.locals.user = null;
     }
@@ -108,10 +75,41 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.post("/sessionLogin", async (req, res) => {
+  const idToken = req.body.token;
+  try {
+    const expiresIn = 60 * 60 * 24 * 1000; // 1 day
+    const sessionCookie = await admin
+      .auth()
+      .createSessionCookie(idToken, { expiresIn });
+
+    res.cookie("session", sessionCookie, {
+      maxAge: expiresIn,
+      httpOnly: true,
+    });
+    res.status(200).send("Login successful");
+  } catch (error) {
+    console.error("Session login failed:", error.message);
+    res.status(401).send("Unauthorized");
+  }
+});
+
 // Home
-app.get("/", (req, res) => {
-  const isAuthenticated = !!req.cookies.session;
-  res.render("index", { isAuthenticated });
+app.get("/", checkAuth, async (req, res) => {
+  if (!req.user) {
+    return res.render("index", { user: null });
+  }
+
+  // Firestore에서 username 가져오기
+  const userDoc = await db.collection("users").doc(req.user.uid).get();
+  const userData = userDoc.exists ? userDoc.data() : {};
+
+  res.render("index", {
+    user: {
+      email: req.user.email,
+      username: userData.username || req.user.email.split("@")[0],
+    },
+  });
 });
 
 // Sign up
@@ -125,24 +123,6 @@ app.get("/signup", (req, res) => {
   }
 });
 
-// app.use("/createTables", sessionValidation);
-// app.get("/createTables", async (req, res) => {
-//   try {
-//     let success = await create_tables.createTables(); // Ensure you're awaiting the async function
-
-//     if (success) {
-//       res.send("Created tables.");
-//     } else {
-//       res.send("Failed to create tables.");
-//     }
-//   } catch (err) {
-//     console.error("Error in /createTables route", err);
-//     res.status(500).send("An error occurred while creating tables.");
-//   }
-// });
-
-// signingUp
-
 // Login
 app.get("/login", (req, res) => {
   if (!res.locals.user) {
@@ -153,38 +133,6 @@ app.get("/login", (req, res) => {
     res.redirect("/");
   }
 });
-
-// Logging in
-// app.post("/loggingin", async (req, res) => {
-//   let username = req.body.username;
-//   let password = req.body.password;
-
-//   try {
-//     let user = await db_users.getUser({
-//       username: username,
-//     });
-
-//     if (!user) {
-//       return res.status(404).send("Invalid username or password");
-//     }
-
-//     // there should only be 1 user in the db that matches
-//     if (bcrypt.compareSync(password, user.password_hash)) {
-//       req.session.authenticated = true;
-//       req.session.username = username;
-//       req.session.user_id = user.user_id;
-//       req.session.email = user.email;
-//       // req.session.profile_img = user.profile_img;
-//       req.session.cookie.maxAge = expireTime;
-//       return res.status(200).send("Login success");
-//     } else {
-//       return res.status(404).send("Invalid username or password");
-//     }
-//   } catch (error) {
-//     console.error("Login error:", error);
-//     return res.status(500).send("Server error");
-//   }
-// });
 
 // Log out
 app.get("/logout", (req, res) => {
@@ -198,35 +146,6 @@ app.get("/myAllergy", async (req, res) => {
   const isAuthenticated = req.session.authenticated || false; // Check authentication
   res.render("myAllergy", { isAuthenticated });
 });
-
-//past and deleted events
-// app.use("/pastEvent", sessionValidation);
-// app.get("/pastEvent", async (req, res) => {
-//   const isAuthenticated = req.session.authenticated || false; // Check authentication
-//   res.render("past", { isAuthenticated });
-// });
-
-// app.get("/api/past", async (req, res) => {
-//   const { tab, date } = req.query;
-
-//   try {
-//     if (!req.session || !req.session.user_id) {
-//       return res.status(401).json({ message: "Unauthorized" });
-//     }
-
-//     const userId = req.session.user_id;
-
-//     const events = await db_events.getEventsByTab(tab, date, userId);
-
-//     console.log(`Fetched events for tab: ${tab}, date: ${date}`, events);
-//     res.json({ events });
-//   } catch (error) {
-//     console.error("Error fetching events:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Failed to fetch events.", error: error.message });
-//   }
-// });
 
 //Profile
 
