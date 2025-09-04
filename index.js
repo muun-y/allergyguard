@@ -141,14 +141,72 @@ app.get("/logout", (req, res) => {
 });
 
 //my allergy page
-// app.use("/myAllergy", sessionValidation);
-app.get("/myAllergy", async (req, res) => {
-  const isAuthenticated = req.session.authenticated || false; // Check authentication
-  res.render("myAllergy", { isAuthenticated });
+app.get("/myAllergy", checkAuth, async (req, res) => {
+  try {
+    // get data from the firebase db
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+    const userData = userDoc.exists ? userDoc.data() : {};
+
+    res.render("myAllergy", {
+      user: {
+        email: req.user.email,
+        username: userData.username || req.user.email.split("@")[0],
+      },
+    });
+  } catch (err) {
+    console.error("Error loading myAllergy:", err);
+    res.status(500).send("Failed to load My Allergy page.");
+  }
+});
+
+// Search allergens (autocomplete)
+app.get("/api/allergens/search", async (req, res) => {
+  const query = req.query.q;
+  if (!query || query.length < 2) {
+    return res.json([]); // more than 2 chars
+  }
+
+  try {
+    const snapshot = await db
+      .collection("allergens")
+      .where("allergen", ">=", query)
+      .where("allergen", "<=", query + "\uf8ff") // prefix search
+      .limit(10)
+      .get();
+
+    const results = snapshot.docs.map((doc) => doc.data());
+    res.json(results);
+  } catch (err) {
+    console.error("Error searching allergens:", err);
+    res.status(500).json({ error: "Search failed" });
+  }
+});
+
+// Add allergen to user’s list
+app.post("/api/me/allergies", checkAuth, async (req, res) => {
+  const { allergen } = req.body;
+  if (!allergen) return res.status(400).json({ error: "Allergen is required" });
+
+  try {
+    const allergenRef = db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("allergies")
+      .doc(allergen.toLowerCase());
+
+    await allergenRef.set({
+      allergen,
+      addedAt: new Date(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error adding allergy:", err);
+    res.status(500).json({ error: "Add failed" });
+  }
 });
 
 //Profile
-
 app.get("/profile", async (req, res) => {
   const userId = req.session.user_id;
 

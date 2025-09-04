@@ -3,7 +3,7 @@
 
         <div class="p-4">
             <!-- Not logged in -->
-            <% if (!isAuthenticated) { %>
+            <% if (!user) { %>
                 <div class="h-screen flex flex-col justify-center items-center text-center">
                     <h1 class="text-3xl font-bold mb-4">Welcome to AllergyGuard</h1>
                     <p class="text-lg text-gray-700 mb-6">
@@ -26,31 +26,31 @@
                         Don’t have an account yet? <a href="/signup" class="text-blue-500 hover:underline">Sign up</a>
                     </p>
                 </div>
-
                 <% } else { %>
-                    <!-- Logged in: My Allergy (front-only markup) -->
+                    <!-- Logged in: My Allergy -->
                     <section class="max-w-3xl mx-auto space-y-6">
                         <header>
                             <h2 class="text-2xl font-semibold">My Allergy</h2>
-                            <p class="text-sm text-gray-600">Search the master list, add to your allergies, or remove
-                                items.</p>
+                            <p class="text-sm text-gray-600">
+                                Search the master list, add to your allergies, or remove items.
+                            </p>
                         </header>
 
-                        <!-- Search / Add (no JS wiring yet) -->
+                        <!-- Search / Add -->
                         <div class="space-y-3">
                             <label for="allergen-search" class="block text-sm font-medium">Search allergen</label>
                             <div class="relative">
                                 <input id="allergen-search" name="query" type="text"
                                     placeholder="Type at least 2 characters (e.g., peanut)"
                                     class="border rounded-md p-2 w-full" autocomplete="off" />
-                                <!-- Suggestions dropdown (static container; populate later) -->
+                                <!-- Suggestions dropdown -->
                                 <ul id="suggestions"
                                     class="absolute z-10 mt-1 w-full bg-white border rounded-md shadow max-h-60 overflow-auto hidden">
-                                    <!-- <li class="px-3 py-2 cursor-pointer hover:bg-gray-100">peanut (high)</li> -->
+                                    <!-- dynamically populated by JS -->
                                 </ul>
                             </div>
 
-                            <!-- Add typed item (disabled by default; enable via JS later) -->
+                            <!-- Add typed allergen -->
                             <div class="flex items-center gap-2">
                                 <button id="add-typed" class="px-3 py-2 text-sm border rounded disabled:opacity-50"
                                     disabled type="button">
@@ -63,11 +63,10 @@
                             <p id="helper-msg" class="text-sm text-gray-600"></p>
                         </div>
 
-                        <!-- Current list -->
+                        <!-- Current allergy list -->
                         <div>
                             <h3 class="text-lg font-medium mb-2">Your allergies</h3>
 
-                            <!-- Empty state (toggle via server or JS later) -->
                             <% if (typeof allergies==='undefined' || !allergies || allergies.length===0) { %>
                                 <div class="text-sm text-gray-500">No allergies added yet.</div>
                                 <% } else { %>
@@ -75,23 +74,15 @@
                                         <% allergies.forEach(function(a){ %>
                                             <li class="flex items-center gap-3">
                                                 <span>
-                                                    <%= a.allergenName %>
+                                                    <%= a.allergen %>
                                                 </span>
 
-                                                <!-- Delete (front-only; wire up action or JS later) -->
-                                                <!-- Option A: button for JS modal -->
+                                                <!-- Delete button (wired later with JS or API) -->
                                                 <button class="text-red-600 underline text-sm" type="button"
-                                                    data-role="delete" data-name="<%= a.allergenName %>"
+                                                    data-role="delete" data-name="<%= a.allergen %>"
                                                     data-modal-target="deleteModal">
                                                     delete
                                                 </button>
-
-                                                <!-- Option B (commented): form post to REST endpoint when ready -->
-                                                <!--
-                <form method="post" action="/api/me/allergies/<%= encodeURIComponent(a.allergenName) %>?_method=DELETE">
-                  <button class="text-red-600 underline text-sm" type="submit">delete</button>
-                </form>
-                -->
                                             </li>
                                             <% }) %>
                                     </ul>
@@ -103,3 +94,6 @@
 
         <%- include("templates/deleteModal") %>
             <%- include("templates/footer") %>
+
+                <!-- Page-specific JS -->
+                <script src="/js/allergy.js"></script>
