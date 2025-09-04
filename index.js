@@ -94,13 +94,14 @@ app.post("/sessionLogin", async (req, res) => {
   }
 });
 
+/* routes */
 // Home
 app.get("/", checkAuth, async (req, res) => {
   if (!req.user) {
     return res.render("index", { user: null });
   }
 
-  // Firestore에서 username 가져오기
+  // get the data users
   const userDoc = await db.collection("users").doc(req.user.uid).get();
   const userData = userDoc.exists ? userDoc.data() : {};
 
