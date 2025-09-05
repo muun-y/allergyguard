@@ -45,31 +45,37 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 /* Middleware: Firebase Auth protect */
-async function checkAuth(req, res, next) {
+// async function checkAuth(req, res, next) {
+//   const token = req.cookies.session;
+//   if (!token) return res.redirect("/login");
+
+//   try {
+//     const decoded = await admin.auth().verifySessionCookie(token, true);
+//     req.user = decoded;
+//     next();
+//   } catch (err) {
+//     console.error("Auth error:", err);
+//     return res.redirect("/login");
+//   }
+// }
+
+app.use(async (req, res, next) => {
   const token = req.cookies.session;
-  if (!token) return res.redirect("/login");
+  if (!token) {
+    // console.log("No session cookie in request");
+    req.user = null;
+    res.locals.user = null;
+    return next();
+  }
 
   try {
     const decoded = await admin.auth().verifySessionCookie(token, true);
+    // console.log("✅ Session verified:", decoded.uid, decoded.email);
     req.user = decoded;
-    next();
+    res.locals.user = decoded;
   } catch (err) {
-    console.error("Auth error:", err);
-    return res.redirect("/login");
-  }
-}
-
-app.use(async (req, res, next) => {
-  if (req.cookies.session) {
-    try {
-      const decoded = await admin
-        .auth()
-        .verifySessionCookie(sessionCookie, true);
-      res.locals.user = decoded;
-    } catch (err) {
-      res.locals.user = null;
-    }
-  } else {
+    console.error("Session verify failed:", err.message);
+    req.user = null;
     res.locals.user = null;
   }
   next();
@@ -86,6 +92,8 @@ app.post("/sessionLogin", async (req, res) => {
     res.cookie("session", sessionCookie, {
       maxAge: expiresIn,
       httpOnly: true,
+      secure: false, // developing -> false, production -> true
+      sameSite: "lax",
     });
     res.status(200).send("Login successful");
   } catch (error) {
@@ -94,9 +102,16 @@ app.post("/sessionLogin", async (req, res) => {
   }
 });
 
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.redirect("/login");
+  }
+  next();
+}
+
 /* routes */
 // Home
-app.get("/", checkAuth, async (req, res) => {
+app.get("/", requireAuth, async (req, res) => {
   if (!req.user) {
     return res.render("index", { user: null });
   }
@@ -137,12 +152,23 @@ app.get("/login", (req, res) => {
 
 // Log out
 app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/");
+  res.clearCookie("session");
+  res.redirect("/login");
+});
+
+app.get("/api/me", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+  res.json({
+    uid: req.user.uid,
+    email: req.user.email,
+    username: req.user.name || req.user.email.split("@")[0],
+  });
 });
 
 //my allergy page
-app.get("/myAllergy", checkAuth, async (req, res) => {
+app.get("/myAllergy", requireAuth, async (req, res) => {
   try {
     // get data from the firebase db
     const userDoc = await db.collection("users").doc(req.user.uid).get();
@@ -161,7 +187,7 @@ app.get("/myAllergy", checkAuth, async (req, res) => {
 });
 
 // Search allergens (autocomplete)
-app.get("/api/allergens/search", async (req, res) => {
+app.get("/api/allergens/search", requireAuth, async (req, res) => {
   const query = req.query.q;
   if (!query || query.length < 2) {
     return res.json([]); // more than 2 chars
@@ -183,10 +209,37 @@ app.get("/api/allergens/search", async (req, res) => {
   }
 });
 
-// Add allergen to user’s list
-app.post("/api/me/allergies", checkAuth, async (req, res) => {
+// Search my allergy list
+app.get("/api/me/allergies", async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
+  try {
+    const snapshot = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("allergies")
+      .get();
+
+    const allergies = snapshot.docs.map((doc) => doc.data());
+    res.json(allergies);
+  } catch (err) {
+    console.error("Error fetching allergies:", err);
+    res.status(500).json({ error: "Failed to load allergies" });
+  }
+});
+
+// Add allergy
+app.post("/api/me/allergies", async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
   const { allergen } = req.body;
-  if (!allergen) return res.status(400).json({ error: "Allergen is required" });
+  if (!allergen) {
+    return res.status(400).json({ error: "Allergen is required" });
+  }
 
   try {
     const allergenRef = db
@@ -203,7 +256,33 @@ app.post("/api/me/allergies", checkAuth, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Error adding allergy:", err);
-    res.status(500).json({ error: "Add failed" });
+    res.status(500).json({ error: "Failed to add allergy" });
+  }
+});
+
+// Delete ALlergy
+app.delete("/api/me/allergies/:name", async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Not logged in" });
+  }
+
+  const allergenName = req.params.name;
+  if (!allergenName) {
+    return res.status(400).json({ error: "Allergen name is required" });
+  }
+
+  try {
+    const allergenRef = db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("allergies")
+      .doc(allergenName.toLowerCase());
+
+    await allergenRef.delete();
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting allergy:", err);
+    res.status(500).json({ error: "Failed to delete allergy" });
   }
 });
 

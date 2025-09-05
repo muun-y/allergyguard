@@ -77,14 +77,14 @@
                     alert(`✅ Welcome back, ${userData.username || user.email}!`);
                     const token = await user.getIdToken();
 
-                    // 서버에 세션 생성 요청
+                    // require to sever
                     await fetch("/sessionLogin", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ token })
+                        body: JSON.stringify({ token }),
+                        credentials: "include"
                     });
 
-                    // 서버 세션 쿠키가 생겼으니 대시보드로 이동
                     window.location.href = "/";
                 } else {
                     alert("User info not found in Firestore.");
