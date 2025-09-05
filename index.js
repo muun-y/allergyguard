@@ -424,309 +424,44 @@ app.get("/scan-history/:id", requireAuth, async (req, res) => {
 });
 
 //Profile
-app.get("/profile", async (req, res) => {
-  const userId = req.session.user_id;
-
-  if (!userId) {
-    return res.redirect("/login");
-  }
-
+app.get("/profile", requireAuth, async (req, res) => {
   try {
-    const followersCount = await db_follows.getFollowersCount(userId); // 팔로워 수 가져오기
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+    const allergiesSnap = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("allergies")
+      .get();
+    const historySnap = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("history")
+      .orderBy("createdAt", "desc")
+      .limit(3)
+      .get();
+
+    const userData = userDoc.exists ? userDoc.data() : {};
+    const allergies = allergiesSnap.docs.map((d) => d.data());
+    const recentScans = historySnap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+
     res.render("profile", {
-      username: req.session.username,
-      email: req.session.email,
-      profile_img: req.session.profile_img,
-      followersCount: followersCount, // 팔로워 수 전달
+      user: {
+        email: req.user.email,
+        username: userData.username || req.user.email.split("@")[0],
+        profileImg: userData.profileImg || null,
+      },
+      allergies,
+      historyCount: historySnap.size,
+      recentScans,
     });
-  } catch (error) {
-    console.error("Error loading profile:", error);
-    res.status(500).send("Failed to load profile");
-  }
-});
-
-// Search
-app.get("/search", (req, res) => {
-  res.render("search", {
-    users: [],
-    username: req.session.username,
-    email: req.session.email,
-    profile_img: req.session.profile_img,
-  });
-});
-
-app.get("/search/users", async (req, res) => {
-  const keyword = req.query.keyword; // 검색어를 쿼리 파라미터에서 가져옴
-  const userId = req.session.user_id;
-
-  if (!keyword) {
-    return res.status(400).send("Keyword is required.");
-  }
-
-  try {
-    // DB에서 username이나 email이 검색어와 일치하는 사용자를 검색
-    const users = await db_users.searchUsers(keyword); // searchUsers 함수를 별도로 정의해야 합니다.
-    // 각 사용자에 대한 팔로우 상태 및 팔로워 수 추가
-    const userWithFollowData = await Promise.all(
-      users.map(async (user) => {
-        const isFollowing = await db_follows.isFollowing(userId, user.user_id);
-        const followerCount = await db_follows.getFollowersCount(user.user_id);
-        return { ...user, isFollowing, followerCount };
-      })
-    );
-
-    if (users.length === 0) {
-      console.log("No users found matching the keyword");
-      // return res.json([]);
-      return res.status(204).json([]);
-    }
-
-    res.json(userWithFollowData);
   } catch (err) {
-    console.log("Error searching for users:", err);
-    res.status(500).send("Error searching for users");
+    console.error("Error loading profile:", err);
+    res.status(500).send("Failed to load profile page.");
   }
 });
-
-// Follow API
-app.post("/follow", async (req, res) => {
-  const follower_id = req.session.user_id;
-  const { following_id } = req.body;
-
-  if (!follower_id || !following_id) {
-    return res.status(400).json({ error: "Invalid follower or following ID." });
-  }
-
-  try {
-    const existingFollow = await db_follows.checkFollow({
-      follower_id,
-      following_id,
-    });
-    if (existingFollow) {
-      return res.status(400).json({ message: "Already following this user." });
-    }
-
-    await db_follows.addFollow({ follower_id, following_id });
-
-    // Get updated follower count
-    const followerCount = await db_follows.getFollowersCount(following_id);
-
-    res
-      .status(200)
-      .json({ message: "Successfully followed the user.", followerCount });
-  } catch (err) {
-    console.error("Error following user:", err);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-// Unfollow API
-app.post("/unfollow", async (req, res) => {
-  const follower_id = req.session.user_id;
-  const { following_id } = req.body;
-
-  if (!follower_id || !following_id) {
-    return res.status(400).json({ error: "Invalid follower or following ID." });
-  }
-
-  try {
-    await db_follows.removeFollow({ follower_id, following_id });
-
-    // Get updated follower count
-    const followerCount = await db_follows.getFollowersCount(following_id);
-
-    res
-      .status(200)
-      .json({ message: "Successfully unfollowed the user.", followerCount });
-  } catch (err) {
-    console.error("Error unfollowing user:", err);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-// app.get("/search/comments", async (req, res) => {
-//   const keyword = req.query.keyword; // 검색어를 쿼리 파라미터에서 가져옴
-
-//   if (!keyword) {
-//     return res.status(400).send("검색어가 필요합니다.");
-//   }
-
-//   try {
-//     // DB에서 content가 검색어와 일치하거나 포함된 comment 검색
-//     const comments = await db_comments.getCommentsByKeyword(keyword); // searchComments 함수를 별도로 정의해야 합니다.
-
-//     if (comments.length === 0) {
-//       console.log("No comments found matching the keyword");
-//       return res.status(204).json([]); // 검색 결과가 없을 때 빈 배열 반환
-//     }
-
-//     res.json(comments); // 검색된 댓글을 JSON 형식으로 반환
-//   } catch (err) {
-//     console.log("Error searching for comments:", err);
-//     res.status(500).send("Error searching for comments");
-//   }
-// });
-
-//create new event
-// app.use("/create-event", sessionValidation);
-// app.post("/create-event", async (req, res) => {
-//   const { title, start_date, start_time, end_date, end_time, guests, color } =
-//     req.body;
-//   const user_id = req.session.user_id;
-
-//   // 필수 필드 유효성 검사
-//   if (!title || !start_date || !start_time || !end_date || !end_time) {
-//     return res.status(400).send({
-//       message:
-//         "All required fields (title, start/end date, start/end time) must be filled.",
-//     });
-//   }
-
-//   const start_datetime = new Date(`${start_date}T${start_time}`);
-//   const end_datetime = new Date(`${end_date}T${end_time}`);
-
-//   if (start_datetime >= end_datetime) {
-//     return res.status(400).send({
-//       message: "End date/time must be after start date/time.",
-//     });
-//   }
-
-//   let guestsEmailList = [];
-//   if (guests) {
-//     guestsEmailList = guests.split(",").map((email) => email.trim());
-//   }
-
-//   const eventData = {
-//     title,
-//     start_datetime,
-//     end_datetime,
-//     color: color || "#FFFFFF",
-//     user_id,
-//   };
-
-//   try {
-//     const insertResult = await db_events.insertEvent(eventData);
-
-//     if (!insertResult.success) {
-//       throw new Error(insertResult.error || "Unknown error occurred.");
-//     }
-
-//     const eventId = insertResult.eventId;
-
-//     if (guestsEmailList.length > 0) {
-//       for (const guestEmail of guestsEmailList) {
-//         try {
-//           const guest = await db_users.getUserByEmail(guestEmail);
-//           if (!guest) {
-//             console.warn(`User with email ${guestEmail} not found.`);
-//             continue;
-//           }
-
-//           const notificationData = {
-//             sender_id: user_id,
-//             receiver_id: guest.user_id,
-//             event_id: eventId,
-//             message: `You have been invited to the event: ${title}`,
-//           };
-
-//           await db_notifications.createNotification(notificationData);
-//         } catch (err) {
-//           console.error(`Error sending notification to ${guestEmail}:`, err);
-//         }
-//       }
-//     }
-
-//     res.redirect("/");
-//   } catch (error) {
-//     console.error("Error creating event:", error);
-//     res
-//       .status(500)
-//       .send({ message: "Failed to create event.", error: error.message });
-//   }
-// });
-
-// Route to get past events
-// app.use("/pastEvent", sessionValidation);
-// app.get("/pastEvent", async (req, res) => {
-//   const isAuthenticated = req.session.authenticated || false; // Check authentication
-
-//   // Render the pastEvent view with fetched data
-//   res.render("pastEvent", { isAuthenticated });
-// });
-
-// app.get("/api/notifications/count", async (req, res) => {
-//   const userId = req.session.user_id;
-
-//   if (!userId) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   }
-
-//   try {
-//     const count = await db_notifications.getNotificationCount(userId);
-//     res.json({ count });
-//   } catch (error) {
-//     console.error("Error fetching notification count:", error);
-//     res.status(500).json({ error: "Failed to fetch notification count." });
-//   }
-// });
-
-// app.use("/notifications", sessionValidation);
-// app.get("/notifications", async (req, res) => {
-//   const isAuthenticated = req.session.authenticated || false; // Check authentication
-
-//   // Render the pastEvent view with fetched data
-//   res.render("notifications", { isAuthenticated });
-// });
-
-// app.get("/api/notifications", async (req, res) => {
-//   const userId = req.session.user_id;
-
-//   if (!userId) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   }
-
-//   try {
-//     const notifications = await db_notifications.getNotificationsForUser(
-//       userId
-//     );
-//     res.json({ notifications });
-//   } catch (error) {
-//     console.error("Error fetching notifications:", error);
-//     res.status(500).json({ error: "Failed to fetch notifications." });
-//   }
-// });
-
-// app.post("/api/notifications/:notificationId/accept", async (req, res) => {
-//   const notificationId = req.params.notificationId;
-
-//   try {
-//     const result = await db_notifications.acceptNotification(notificationId);
-//     if (result) {
-//       res.status(200).send({ message: "Invitation accepted" });
-//     } else {
-//       res.status(400).send({ message: "Failed to accept invitation" });
-//     }
-//   } catch (error) {
-//     console.error("Error accepting invitation:", error);
-//     res.status(500).send({ message: "Server error" });
-//   }
-// });
-
-// app.post("/api/notifications/:notificationId/decline", async (req, res) => {
-//   const notificationId = req.params.notificationId;
-
-//   try {
-//     const result = await db_notifications.declineNotification(notificationId);
-//     if (result) {
-//       res.status(200).send({ message: "Invitation declined" });
-//     } else {
-//       res.status(400).send({ message: "Failed to decline invitation" });
-//     }
-//   } catch (error) {
-//     console.error("Error declining invitation:", error);
-//     res.status(500).send({ message: "Server error" });
-//   }
-// });
 
 // Serve static files
 app.use(express.static(__dirname + "/public"));
