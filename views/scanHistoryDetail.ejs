@@ -1,0 +1,35 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+
+        <div class="p-6 max-w-3xl mx-auto space-y-6">
+            <a href="/scan-history" class="flex justify-end text-blue-600 hover:underline text-sm">← Back to
+                History</a>
+            <header>
+                <h2 class="text-2xl font-semibold">Scan Detail</h2>
+                <p class="text-sm text-gray-600">Detailed OCR result</p>
+            </header>
+
+            <div class="border rounded p-4 space-y-3 bg-white shadow">
+                <p><strong>Date:</strong>
+                    <%= new Date(history.createdAt.toDate()).toLocaleString() %>
+                </p>
+
+                <div>
+                    <strong>OCR Text:</strong>
+                    <pre class="whitespace-pre-wrap bg-gray-50 p-2 rounded border text-sm"><%= history.text %></pre>
+                </div>
+
+                <div>
+                    <% if (history.matched && history.matched.length> 0) { %>
+                        <p class="text-red-600 font-semibold">
+                            ⚠️ Matched Allergens: <%= history.matched.join(", ") %>
+        </p>
+      <% } else { %>
+        <p class=" text-green-600 font-semibold">✅ No allergens found</p>
+                        <% } %>
+                </div>
+            </div>
+
+        </div>
+
+        <%- include("templates/footer") %>

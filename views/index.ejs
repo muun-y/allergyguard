@@ -72,21 +72,27 @@
                                 <a href="/scan-history" class="text-blue-600 hover:underline text-sm">View all</a>
                             </div>
 
-                            <!-- TODO: Replace with dynamic history -->
-                            <ul class="divide-y border rounded">
-                                <li class="p-3 flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm text-gray-700">Nov 2, 2025 — Matched: Peanut</p>
-                                    </div>
-                                    <a href="#" class="text-xs text-gray-500 hover:underline">image</a>
-                                </li>
-                                <li class="p-3 flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm text-gray-700">Nov 1, 2025 — No matches</p>
-                                    </div>
-                                    <a href="#" class="text-xs text-gray-500 hover:underline">image</a>
-                                </li>
-                            </ul>
+                            <% if (!history || history.length===0) { %>
+                                <p class="text-sm text-gray-500">No history yet.</p>
+                                <% } else { %>
+                                    <ul class="divide-y border rounded">
+                                        <% history.forEach(function(h){ %>
+                                            <li class="p-3 flex items-center justify-between">
+                                                <div>
+                                                    <p class="text-sm text-gray-700">
+                                                        <%= new Date(h.createdAt.toDate()).toLocaleDateString() %> —
+                                                            <% if (h.matched && h.matched.length> 0) { %>
+                                                                Matched: <%= h.matched.join(", ") %>
+                                      <% } else { %>
+                                        No matches
+                                      <% } %>
+                                    </p>
+                                  </div>
+                                  <a href=" #" class="text-xs text-gray-500 hover:underline">details</a>
+                                            </li>
+                                            <% }) %>
+                                    </ul>
+                                    <% } %>
                         </section>
 
                         <!-- Bottom: Scan button -->

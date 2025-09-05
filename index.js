@@ -129,12 +129,27 @@ app.get("/", requireAuth, async (req, res) => {
 
   const allergies = allergiesSnap.docs.map((doc) => doc.data());
 
+  // recent 3 histories
+  const historySnap = await db
+    .collection("users")
+    .doc(req.user.uid)
+    .collection("history")
+    .orderBy("createdAt", "desc")
+    .limit(3)
+    .get();
+
+  const history = historySnap.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
   res.render("index", {
     user: {
       email: req.user.email,
       username: userData.username || req.user.email.split("@")[0],
     },
     allergies,
+    history,
   });
 });
 
@@ -351,7 +366,6 @@ app.get("/scan-history", requireAuth, async (req, res) => {
       .doc(req.user.uid)
       .collection("history")
       .orderBy("createdAt", "desc")
-      .limit(20)
       .get();
 
     const history = snapshot.docs.map((doc) => ({
@@ -366,6 +380,34 @@ app.get("/scan-history", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error loading history:", err);
     res.status(500).send("Failed to load scan history.");
+  }
+});
+
+// Scan History Detail
+app.get("/scan-history/:id", requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const docSnap = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("history")
+      .doc(id)
+      .get();
+
+    if (!docSnap.exists) {
+      return res.status(404).send("History not found");
+    }
+
+    const history = { id: docSnap.id, ...docSnap.data() };
+
+    res.render("scanHistoryDetail", {
+      user: req.user,
+      history,
+    });
+  } catch (err) {
+    console.error("Error loading history detail:", err);
+    res.status(500).send("Failed to load history detail.");
   }
 });
 
