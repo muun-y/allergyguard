@@ -1,0 +1,101 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+
+        <div class="p-6 max-w-xl mx-auto bg-white rounded shadow">
+            <h2 class="text-xl font-semibold mb-4">Scan a Food Label</h2>
+
+            <!-- 이미지 업로드 -->
+            <input type="file" id="image-upload" accept="image/*" class="mb-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0 file:text-sm file:font-semibold
+                file:bg-black file:text-white hover:file:bg-gray-800" />
+
+            <!-- 미리보기 -->
+            <div id="preview-container" class="hidden mb-4">
+                <p class="text-sm text-gray-600 mb-2">Preview:</p>
+                <img id="preview" class="max-h-64 border rounded" />
+            </div>
+
+            <!-- Run OCR -->
+            <button id="scan-btn"
+                class="w-full md:w-auto text-center bg-black hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded shadow disabled:opacity-50"
+                disabled>
+                Run OCR
+            </button>
+
+            <!-- 결과 -->
+            <div id="scan-result" class="mt-4 text-sm text-gray-700"></div>
+        </div>
+
+        <%- include("templates/footer") %>
+
+            <!-- Tesseract.js -->
+            <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+            <script>
+                const upload = document.getElementById("image-upload");
+                const previewContainer = document.getElementById("preview-container");
+                const preview = document.getElementById("preview");
+                const scanBtn = document.getElementById("scan-btn");
+                const resultBox = document.getElementById("scan-result");
+
+                let selectedFile = null;
+
+                // 업로드 + 미리보기
+                upload.addEventListener("change", (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        selectedFile = file;
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            preview.src = e.target.result;
+                            previewContainer.classList.remove("hidden");
+                            scanBtn.disabled = false;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Run OCR
+                scanBtn.addEventListener("click", async () => {
+                    if (!selectedFile) return;
+
+                    resultBox.textContent = "⏳ Running OCR...";
+
+                    try {
+                        const { data: { text } } = await Tesseract.recognize(
+                            preview.src,
+                            "eng",
+                            { logger: m => console.log(m) }
+                        );
+
+                        resultBox.innerHTML = `
+        <p class="font-medium">OCR Result:</p>
+        <pre class="whitespace-pre-wrap bg-gray-50 p-2 rounded border">${text}</pre>
+      `;
+
+                        // 알러지 매칭 요청 (백엔드에 전달)
+                        const res = await fetch("/api/scan/match", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ text })
+                        });
+                        const data = await res.json();
+
+                        if (data.matched && data.matched.length > 0) {
+                            resultBox.innerHTML += `
+          <p class="mt-2 text-red-600 font-semibold">
+            ⚠️ Warning! Found allergens: ${data.matched.join(", ")}
+          </p>
+        `;
+                        } else {
+                            resultBox.innerHTML += `
+          <p class="mt-2 text-green-600 font-semibold">✅ No allergens found.</p>
+        `;
+                        }
+
+                    } catch (err) {
+                        console.error("OCR error:", err);
+                        resultBox.textContent = "❌ OCR failed. Please try again.";
+                    }
+                });
+            </script>

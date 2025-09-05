@@ -296,6 +296,51 @@ app.delete("/api/me/allergies/:name", async (req, res) => {
   }
 });
 
+//scan page
+app.get("/scan", requireAuth, async (req, res) => {
+  try {
+    res.render("scan", {
+      user: req.user,
+    });
+  } catch (err) {
+    console.error("Error loading scan page:", err);
+    res.status(500).send("Failed to load Scan page.");
+  }
+});
+
+// ocr result match
+app.post("/api/scan/match", requireAuth, async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "Text required" });
+
+  try {
+    const snapshot = await db.collection("allergens").get();
+    const allergens = snapshot.docs.map((d) => d.data().allergen);
+
+    const lowerText = text.toLowerCase();
+    const matched = allergens.filter((a) =>
+      lowerText.includes(a.toLowerCase())
+    );
+
+    // 히스토리 저장
+    const historyRef = db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("history")
+      .doc();
+    await historyRef.set({
+      text,
+      matched,
+      createdAt: new Date(),
+    });
+
+    res.json({ matched });
+  } catch (err) {
+    console.error("Scan match failed:", err);
+    res.status(500).json({ error: "Match failed" });
+  }
+});
+
 //Profile
 app.get("/profile", async (req, res) => {
   const userId = req.session.user_id;
