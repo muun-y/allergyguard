@@ -52,11 +52,16 @@
                                 <a href="/myAllergy" class="text-blue-600 hover:underline text-sm">Manage</a>
                             </div>
 
-                            <!-- TODO: Replace with dynamic allergies -->
                             <ul class="flex flex-wrap gap-2">
-                                <li class="px-3 py-1 rounded-full bg-gray-100 border text-sm">Peanut</li>
-                                <li class="px-3 py-1 rounded-full bg-gray-100 border text-sm">Milk</li>
-                                <li class="px-3 py-1 rounded-full bg-gray-100 border text-sm">Shellfish</li>
+                                <% if (typeof allergies==='undefined' || allergies.length===0) { %>
+                                    <li class="text-sm text-gray-500">No allergies added yet.</li>
+                                    <% } else { %>
+                                        <% allergies.forEach(function(a){ %>
+                                            <li class="px-3 py-1 rounded-full bg-gray-100 border text-sm">
+                                                <%= a.allergen %>
+                                            </li>
+                                            <% }) %>
+                                                <% } %>
                             </ul>
                         </section>
 

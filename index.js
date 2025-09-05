@@ -113,18 +113,28 @@ function requireAuth(req, res, next) {
 // Home
 app.get("/", requireAuth, async (req, res) => {
   if (!req.user) {
-    return res.render("index", { user: null });
+    return res.render("index", { user: null, allergies: [] });
   }
 
   // get the data users
   const userDoc = await db.collection("users").doc(req.user.uid).get();
   const userData = userDoc.exists ? userDoc.data() : {};
 
+  //get the user allergy list
+  const allergiesSnap = await db
+    .collection("users")
+    .doc(req.user.uid)
+    .collection("allergies")
+    .get();
+
+  const allergies = allergiesSnap.docs.map((doc) => doc.data());
+
   res.render("index", {
     user: {
       email: req.user.email,
       username: userData.username || req.user.email.split("@")[0],
     },
+    allergies,
   });
 });
 

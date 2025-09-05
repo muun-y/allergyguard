@@ -6,9 +6,15 @@ const typedPreview = document.getElementById("typed-preview");
 const helperMsg = document.getElementById("helper-msg");
 const allergyList = document.getElementById("allergy-list");
 
-let currentUser = null;
+// Delete Modal refs
+const deleteModal = document.getElementById("delete-modal");
+const cancelBtn = document.getElementById("cancel-button");
+const confirmDeleteBtn = document.getElementById("confirm-delete-button");
 
-// --- 로그인된 유저 확인 ---
+let currentUser = null;
+let deleteTarget = null; // deleted allergen save temp
+
+// --- Check the logged in user ---
 async function fetchCurrentUser() {
   try {
     const res = await fetch("/api/me", { credentials: "include" });
@@ -17,9 +23,9 @@ async function fetchCurrentUser() {
       return;
     }
     currentUser = await res.json();
-    console.log("✅ Authenticated:", currentUser.email);
+    // console.log("✅ Authenticated:", currentUser.email);
 
-    // 로그인 된 경우 알러지 목록도 로드
+    // Logged in -> load list of allergens
     loadAllergies();
   } catch (err) {
     console.error("Failed to fetch user:", err);
@@ -140,35 +146,51 @@ async function addAllergy(allergenName) {
   }
 }
 
-// --- 알러지 삭제 ---
-document.addEventListener("click", async (e) => {
-  if (e.target && e.target.dataset.role === "delete") {
-    const allergenName = e.target.dataset.name;
-    if (!currentUser) {
-      alert("Please log in first.");
-      return;
-    }
-    if (!confirm(`Delete ${allergenName}?`)) return;
+// --- Delete Modal open/close ---
+function openDeleteModal(allergenName) {
+  deleteTarget = allergenName;
+  deleteModal.classList.remove("hidden");
+}
 
-    try {
-      const res = await fetch(
-        `/api/me/allergies/${encodeURIComponent(allergenName)}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        helperMsg.textContent = `🗑️ Deleted ${allergenName}`;
-        loadAllergies(); // 목록 다시 불러오기
-      } else {
-        helperMsg.textContent = "❌ Failed to delete allergy.";
+function closeDeleteModal() {
+  deleteTarget = null;
+  deleteModal.classList.add("hidden");
+}
+
+// --- 이벤트 바인딩: Cancel & Confirm ---
+cancelBtn.addEventListener("click", closeDeleteModal);
+
+confirmDeleteBtn.addEventListener("click", async () => {
+  if (!deleteTarget) return;
+
+  try {
+    const res = await fetch(
+      `/api/me/allergies/${encodeURIComponent(deleteTarget)}`,
+      {
+        method: "DELETE",
+        credentials: "include",
       }
-    } catch (err) {
-      console.error("Error deleting allergy:", err);
+    );
+    const data = await res.json();
+    if (data.success) {
+      helperMsg.textContent = `🗑️ Deleted ${deleteTarget}`;
+      loadAllergies(); // 목록 갱신
+    } else {
       helperMsg.textContent = "❌ Failed to delete allergy.";
     }
+  } catch (err) {
+    console.error("Error deleting allergy:", err);
+    helperMsg.textContent = "❌ Failed to delete allergy.";
+  } finally {
+    closeDeleteModal();
+  }
+});
+
+// --- 알러지 삭제 버튼 클릭 시 모달 열기 ---
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.dataset.role === "delete") {
+    const allergenName = e.target.dataset.name;
+    openDeleteModal(allergenName);
   }
 });
 
