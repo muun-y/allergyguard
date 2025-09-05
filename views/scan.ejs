@@ -84,7 +84,6 @@
                             { logger: m => console.log(m) }
                         );
 
-                        // "Ingredients" 섹션만 추출
                         let ingredientsText = text;
                         const lower = text.toLowerCase();
                         const idx = lower.indexOf("ingredients");
@@ -92,7 +91,6 @@
                             ingredientsText = text.substring(idx);
                         }
 
-                        // 서버에 Ingredients 부분만 저장
                         const res = await fetch("/api/scan/match", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
