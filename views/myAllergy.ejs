@@ -56,7 +56,9 @@
                                     disabled type="button">
                                     Add “<span id="typed-preview"></span>”
                                 </button>
-                                <span class="text-xs text-gray-500">Pick a suggestion or add the typed text.</span>
+                                <span class="text-xs text-gray-500">
+                                    Pick a suggestion to add immediately, or type your own and click Add.
+                                </span>
                             </div>
 
                             <!-- Status / helper text -->
@@ -70,17 +72,15 @@
                             <% if (typeof allergies==='undefined' || !allergies || allergies.length===0) { %>
                                 <div class="text-sm text-gray-500">No allergies added yet.</div>
                                 <% } else { %>
-                                    <ul class="list-disc pl-6 space-y-1">
+                                    <ul id="allergy-list" class="list-disc pl-6 space-y-1">
                                         <% allergies.forEach(function(a){ %>
                                             <li class="flex items-center gap-3">
                                                 <span>
                                                     <%= a.allergen %>
                                                 </span>
-
-                                                <!-- Delete button (wired later with JS or API) -->
+                                                <!-- Delete button -->
                                                 <button class="text-red-600 underline text-sm" type="button"
-                                                    data-role="delete" data-name="<%= a.allergen %>"
-                                                    data-modal-target="deleteModal">
+                                                    data-role="delete" data-name="<%= a.allergen %>">
                                                     delete
                                                 </button>
                                             </li>
