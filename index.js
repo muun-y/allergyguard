@@ -314,21 +314,23 @@ app.post("/api/scan/match", requireAuth, async (req, res) => {
   if (!text) return res.status(400).json({ error: "Text required" });
 
   try {
-    const snapshot = await db.collection("allergens").get();
-    const allergens = snapshot.docs.map((d) => d.data().allergen);
+    // user's allergy
+    const snapshot = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("allergies")
+      .get();
 
+    const userAllergies = snapshot.docs.map((d) => d.data().allergen);
+
+    // matching with user's allergy
     const lowerText = text.toLowerCase();
-    const matched = allergens.filter((a) =>
+    const matched = userAllergies.filter((a) =>
       lowerText.includes(a.toLowerCase())
     );
 
-    // save history
-    const historyRef = db
-      .collection("users")
-      .doc(req.user.uid)
-      .collection("history")
-      .doc();
-    await historyRef.set({
+    // save the result
+    await db.collection("users").doc(req.user.uid).collection("history").add({
       text,
       matched,
       createdAt: new Date(),
@@ -338,6 +340,32 @@ app.post("/api/scan/match", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Scan match failed:", err);
     res.status(500).json({ error: "Match failed" });
+  }
+});
+
+// Scan History page
+app.get("/scan-history", requireAuth, async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .collection("history")
+      .orderBy("createdAt", "desc")
+      .limit(20)
+      .get();
+
+    const history = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.render("scanHistory", {
+      user: req.user,
+      history,
+    });
+  } catch (err) {
+    console.error("Error loading history:", err);
+    res.status(500).send("Failed to load scan history.");
   }
 });
 

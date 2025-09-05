@@ -1,0 +1,36 @@
+<%- include("templates/header") %>
+    <%- include("templates/navbar") %>
+
+        <div class="p-6 max-w-3xl mx-auto space-y-6">
+            <header>
+                <h2 class="text-2xl font-semibold">Scan History</h2>
+                <p class="text-sm text-gray-600">Your recent label scans</p>
+            </header>
+
+            <% if (history.length===0) { %>
+                <p class="text-sm text-gray-500">No history yet.</p>
+                <% } else { %>
+                    <ul class="divide-y border rounded">
+                        <% history.forEach(function(h){ %>
+                            <li class="p-4">
+                                <p class="text-sm text-gray-700 mb-2">
+                                    <strong>Date:</strong>
+                                    <%= new Date(h.createdAt.toDate()).toLocaleString() %>
+                                </p>
+                                <p class="text-sm text-gray-700 whitespace-pre-line">
+                                    <%= h.text %>
+                                </p>
+                                <% if (h.matched && h.matched.length> 0) { %>
+                                    <p class="mt-2 text-red-600 font-semibold">
+                                        ⚠️ Allergens: <%= h.matched.join(", ") %>
+            </p>
+          <% } else { %>
+            <p class=" mt-2 text-green-600 font-semibold">✅ No allergens found</p>
+                                    <% } %>
+                            </li>
+                            <% }) %>
+                    </ul>
+                    <% } %>
+        </div>
+
+        <%- include("templates/footer") %>

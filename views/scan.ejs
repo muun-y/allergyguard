@@ -40,7 +40,7 @@
 
                 let selectedFile = null;
 
-                // 업로드 + 미리보기
+                // upload + preview
                 upload.addEventListener("change", (e) => {
                     const file = e.target.files[0];
                     if (file) {
@@ -68,7 +68,15 @@
                             { logger: m => console.log(m) }
                         );
 
-                        // 서버에 매칭 요청
+                        //text after "ingredients"
+                        let previewText = text;
+                        const lower = text.toLowerCase();
+                        const idx = lower.indexOf("ingredients");
+                        if (idx !== -1) {
+                            previewText = text.substring(idx);
+                        }
+
+                        // request to server
                         const res = await fetch("/api/scan/match", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
