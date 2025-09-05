@@ -170,8 +170,8 @@ app.get("/api/allergens/search", async (req, res) => {
   try {
     const snapshot = await db
       .collection("allergens")
-      .where("allergen", ">=", query)
-      .where("allergen", "<=", query + "\uf8ff") // prefix search
+      .where("allergenLower", ">=", query)
+      .where("allergenLower", "<=", query + "\uf8ff")
       .limit(10)
       .get();
 

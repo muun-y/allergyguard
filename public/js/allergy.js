@@ -28,6 +28,7 @@ input.addEventListener("input", async () => {
     suggestions.innerHTML = "";
     if (results.length > 0) {
       results.forEach((item) => {
+        console.log("Rendering suggestion:", item.allergen);
         const li = document.createElement("li");
         li.textContent = item.allergen;
         li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100";
