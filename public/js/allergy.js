@@ -18,13 +18,46 @@ async function fetchCurrentUser() {
     }
     currentUser = await res.json();
     console.log("✅ Authenticated:", currentUser.email);
+
+    // 로그인 된 경우 알러지 목록도 로드
+    loadAllergies();
   } catch (err) {
     console.error("Failed to fetch user:", err);
   }
 }
 
-// 페이지 로드 시 실행
-fetchCurrentUser();
+// --- 알러지 목록 불러오기 ---
+async function loadAllergies() {
+  try {
+    const res = await fetch("/api/me/allergies", { credentials: "include" });
+    if (!res.ok) {
+      console.log("⚠️ Failed to fetch allergies");
+      return;
+    }
+    const allergies = await res.json();
+    allergyList.innerHTML = "";
+
+    if (allergies.length === 0) {
+      allergyList.innerHTML = `<div class="text-sm text-gray-500">No allergies added yet.</div>`;
+    } else {
+      allergies.forEach((a) => {
+        const li = document.createElement("li");
+        li.className = "flex items-center gap-3";
+        li.innerHTML = `
+          <span>${a.allergen}</span>
+          <button class="text-red-600 underline text-sm"
+                  type="button"
+                  data-role="delete"
+                  data-name="${a.allergen}">
+            delete
+          </button>`;
+        allergyList.appendChild(li);
+      });
+    }
+  } catch (err) {
+    console.error("Error loading allergies:", err);
+  }
+}
 
 // --- 자동완성 검색 ---
 input.addEventListener("input", async () => {
@@ -41,9 +74,7 @@ input.addEventListener("input", async () => {
   try {
     const res = await fetch(
       `/api/allergens/search?q=${encodeURIComponent(queryText)}`,
-      {
-        credentials: "include",
-      }
+      { credentials: "include" }
     );
     const results = await res.json();
 
@@ -92,28 +123,7 @@ async function addAllergy(allergenName) {
 
     if (data.success) {
       helperMsg.textContent = `✅ Added ${allergenName}`;
-
-      // UI에 즉시 반영
-      let list = document.getElementById("allergy-list");
-      if (!list) {
-        list = document.createElement("ul");
-        list.id = "allergy-list";
-        list.className = "list-disc pl-6 space-y-1";
-        const container = document.querySelector("h3.text-lg").parentNode;
-        container.appendChild(list);
-      }
-
-      const li = document.createElement("li");
-      li.className = "flex items-center gap-3";
-      li.innerHTML = `
-        <span>${allergenName}</span>
-        <button class="text-red-600 underline text-sm"
-                type="button"
-                data-role="delete"
-                data-name="${allergenName}">
-          delete
-        </button>`;
-      list.appendChild(li);
+      loadAllergies(); // 목록 다시 불러오기
 
       // 입력 초기화
       input.value = "";
@@ -151,7 +161,7 @@ document.addEventListener("click", async (e) => {
       const data = await res.json();
       if (data.success) {
         helperMsg.textContent = `🗑️ Deleted ${allergenName}`;
-        e.target.closest("li").remove();
+        loadAllergies(); // 목록 다시 불러오기
       } else {
         helperMsg.textContent = "❌ Failed to delete allergy.";
       }
@@ -161,3 +171,6 @@ document.addEventListener("click", async (e) => {
     }
   }
 });
+
+// --- 페이지 로드 시 실행 ---
+fetchCurrentUser();

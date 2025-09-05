@@ -2,8 +2,8 @@
     <%- include("templates/navbar") %>
 
         <div class="p-4">
-            <!-- Not logged in -->
             <% if (!user) { %>
+                <!-- Not logged in -->
                 <div class="h-screen flex flex-col justify-center items-center text-center">
                     <h1 class="text-3xl font-bold mb-4">Welcome to AllergyGuard</h1>
                     <p class="text-lg text-gray-700 mb-6">
@@ -68,25 +68,9 @@
                         <!-- Current allergy list -->
                         <div>
                             <h3 class="text-lg font-medium mb-2">Your allergies</h3>
-
-                            <% if (typeof allergies==='undefined' || !allergies || allergies.length===0) { %>
-                                <div class="text-sm text-gray-500">No allergies added yet.</div>
-                                <% } else { %>
-                                    <ul id="allergy-list" class="list-disc pl-6 space-y-1">
-                                        <% allergies.forEach(function(a){ %>
-                                            <li class="flex items-center gap-3">
-                                                <span>
-                                                    <%= a.allergen %>
-                                                </span>
-                                                <!-- Delete button -->
-                                                <button class="text-red-600 underline text-sm" type="button"
-                                                    data-role="delete" data-name="<%= a.allergen %>">
-                                                    delete
-                                                </button>
-                                            </li>
-                                            <% }) %>
-                                    </ul>
-                                    <% } %>
+                            <ul id="allergy-list" class="list-disc pl-6 space-y-1">
+                                <!-- JS로 채움 -->
+                            </ul>
                         </div>
                     </section>
                     <% } %>
