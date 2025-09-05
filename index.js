@@ -322,7 +322,7 @@ app.post("/api/scan/match", requireAuth, async (req, res) => {
       lowerText.includes(a.toLowerCase())
     );
 
-    // 히스토리 저장
+    // save history
     const historyRef = db
       .collection("users")
       .doc(req.user.uid)
