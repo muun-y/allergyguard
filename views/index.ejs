@@ -82,7 +82,7 @@
                                                     <p class="text-sm text-gray-700">
                                                         <%= new Date(h.createdAt.toDate()).toLocaleDateString() %> —
                                                             <% if (h.matched && h.matched.length> 0) { %>
-                                                                Matched: <%= h.matched.join(", ") %>
+                                                                ⚠️Matched: <%= h.matched.join(", ") %>
                                       <% } else { %>
                                         No matches
                                       <% } %>
@@ -100,12 +100,97 @@
                         <div class="pt-2 pb-6">
                             <a href="/scan"
                                 class="w-full md:w-auto text-center bg-black hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded shadow">
-                                Scan Now
+                                Scan
                             </a>
                         </div>
 
+                        <!-- Government Allergy Resources -->
+                        <section>
+                            <h2 class="text-xl font-semibold mb-4">BC Allergy & Food Safety Resources</h2>
+
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <!-- BC CDC -->
+                                <div
+                                    class="p-4 border rounded-lg shadow hover:shadow-md bg-white flex flex-col justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-medium flex items-center gap-2">
+                                            🌿 Common food allergens
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            Canadian health authorities and experts have identified the main substances
+                                            most commonly linked to food allergies and
+                                            allergic reactions.
+                                        </p>
+                                    </div>
+                                    <a href="https://www.canada.ca/en/health-canada/services/food-nutrition/food-safety/food-allergies-intolerances/food-allergies.html"
+                                        target="_blank"
+                                        class="mt-3 inline-block text-blue-600 hover:underline text-sm font-medium">
+                                        Visit site →
+                                    </a>
+                                </div>
+
+                                <!-- HealthLink BC -->
+                                <div
+                                    class="p-4 border rounded-lg shadow hover:shadow-md bg-white flex flex-col justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-medium flex items-center gap-2">
+                                            🏥 HealthLink BC
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            Trusted information on food allergies, symptoms, and management. Available
+                                            in
+                                            multiple languages.
+                                        </p>
+                                    </div>
+                                    <a href="https://www.healthlinkbc.ca/illnesses-conditions/food-allergy"
+                                        target="_blank"
+                                        class="mt-3 inline-block text-blue-600 hover:underline text-sm font-medium">
+                                        Visit site →
+                                    </a>
+                                </div>
+
+                                <!-- Allergy Foundation of Canada -->
+                                <div
+                                    class="p-4 border rounded-lg shadow hover:shadow-md bg-white flex flex-col justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-medium flex items-center gap-2">
+                                            🤝 Allergy Foundation of Canada
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            Support programs, education, and advocacy for Canadians living with
+                                            allergies.
+                                        </p>
+                                    </div>
+                                    <a href="https://www.allergyfoundation.ca/" target="_blank"
+                                        class="mt-3 inline-block text-blue-600 hover:underline text-sm font-medium">
+                                        Visit site →
+                                    </a>
+                                </div>
+
+                                <!-- Food Allergy Canada -->
+                                <div
+                                    class="p-4 border rounded-lg shadow hover:shadow-md bg-white flex flex-col justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-medium flex items-center gap-2">
+                                            🍁 Food Allergy Canada
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            National resources, community stories, and campaigns to raise awareness
+                                            about
+                                            food allergies.
+                                        </p>
+                                    </div>
+                                    <a href="https://foodallergycanada.ca/" target="_blank"
+                                        class="mt-3 inline-block text-blue-600 hover:underline text-sm font-medium">
+                                        Visit site →
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
 
                     </section>
+
+
                     <% } %>
         </div>
 
