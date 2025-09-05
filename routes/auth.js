@@ -7,7 +7,7 @@ router.post("/sessionLogin", async (req, res) => {
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
 
-    // JWT를 쿠키에 저장 (세션 DB 불필요)
+    // save the cookie in session
     res.cookie("session", idToken, { httpOnly: true, secure: false });
     res.json({ success: true });
   } catch (err) {

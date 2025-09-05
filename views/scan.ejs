@@ -2,14 +2,15 @@
     <%- include("templates/navbar") %>
 
         <div class="p-6 max-w-xl mx-auto bg-white rounded shadow">
+            <a href="/" class="flex justify-end text-blue-600 hover:underline text-sm">← Back to Home</a>
             <h2 class="text-xl font-semibold mb-4">Scan a Food Label</h2>
 
-            <!-- 이미지 업로드 -->
+            <!-- Upload Image -->
             <input type="file" id="image-upload" accept="image/*" class="mb-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0 file:text-sm file:font-semibold
                 file:bg-black file:text-white hover:file:bg-gray-800" />
 
-            <!-- 미리보기 -->
+            <!-- Preview -->
             <div id="preview-container" class="hidden mb-4">
                 <p class="text-sm text-gray-600 mb-2">Preview:</p>
                 <img id="preview" class="max-h-64 border rounded" />
@@ -22,7 +23,7 @@
                 Run OCR
             </button>
 
-            <!-- 결과 -->
+            <!-- Result -->
             <div id="scan-result" class="mt-4 text-sm text-gray-700"></div>
         </div>
 
@@ -39,73 +40,87 @@
                 const resultBox = document.getElementById("scan-result");
 
                 let selectedFile = null;
+                let uploadedUrl = null;
 
-                // upload + preview
-                upload.addEventListener("change", (e) => {
+                // Cloudinary upload+preview
+                upload.addEventListener("change", async (e) => {
                     const file = e.target.files[0];
-                    if (file) {
-                        selectedFile = file;
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            preview.src = e.target.result;
+                    if (!file) return;
+
+                    selectedFile = file;
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    try {
+                        const res = await fetch("/api/upload", {
+                            method: "POST",
+                            body: formData,
+                            credentials: "include",
+                        });
+                        const data = await res.json();
+
+                        if (data.url) {
+                            uploadedUrl = data.url;
+                            preview.src = uploadedUrl;
                             previewContainer.classList.remove("hidden");
                             scanBtn.disabled = false;
-                        };
-                        reader.readAsDataURL(file);
+                        }
+                    } catch (err) {
+                        console.error("Upload error:", err);
+                        alert("Upload failed");
                     }
                 });
 
                 // Run OCR
                 scanBtn.addEventListener("click", async () => {
-                    if (!selectedFile) return;
+                    if (!uploadedUrl) return;
 
                     resultBox.textContent = "⏳ Running OCR...";
 
                     try {
                         const { data: { text } } = await Tesseract.recognize(
-                            preview.src,
+                            uploadedUrl,
                             "eng",
                             { logger: m => console.log(m) }
                         );
 
-                        //text after "ingredients"
-                        let previewText = text;
+                        // "Ingredients" 섹션만 추출
+                        let ingredientsText = text;
                         const lower = text.toLowerCase();
                         const idx = lower.indexOf("ingredients");
                         if (idx !== -1) {
-                            previewText = text.substring(idx);
+                            ingredientsText = text.substring(idx);
                         }
 
-                        // request to server
+                        // 서버에 Ingredients 부분만 저장
                         const res = await fetch("/api/scan/match", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ text }),
-                            credentials: "include"
+                            body: JSON.stringify({ text: ingredientsText, image: uploadedUrl }),
+                            credentials: "include",
                         });
 
                         const data = await res.json();
 
                         resultBox.innerHTML = `
-        <p class="font-medium">OCR Result:</p>
-        <pre class="whitespace-pre-wrap bg-gray-50 p-2 rounded border">${text}</pre>
-      `;
+                  <p class="font-medium">OCR Result (Ingredients section):</p>
+                  <pre class="whitespace-pre-wrap bg-gray-50 p-2 rounded border">${ingredientsText}</pre>
+                `;
 
                         if (data.matched && data.matched.length > 0) {
                             resultBox.innerHTML += `
-          <p class="mt-2 text-red-600 font-semibold">
-            ⚠️ Warning! Found allergens: ${data.matched.join(", ")}
-          </p>
-        `;
+                    <h2 class="mt-2 text-red-600 font-semibold">
+                      ⚠️ Warning! Found allergens: ${data.matched.join(", ")}
+                    </h2>
+                  `;
                         } else {
                             resultBox.innerHTML += `
-          <p class="mt-2 text-green-600 font-semibold">✅ No allergens found.</p>
-        `;
+                    <p class="mt-2 text-green-600 font-semibold">✅ No allergens found.</p>
+                  `;
                         }
-
                     } catch (err) {
                         console.error("OCR error:", err);
-                        resultBox.textContent = "❌ OCR failed. Please try again.";
+                        resultBox.textContent = "❌ Scan Failed. Please try again.";
                     }
                 });
             </script>

@@ -17,10 +17,6 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// Multer for file uploads
-// const fs = require("fs");
-// const uploadDir = path.join(__dirname, "/public/profile");
-
 //reference of the express module
 const app = express();
 
@@ -45,20 +41,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 /* Middleware: Firebase Auth protect */
-// async function checkAuth(req, res, next) {
-//   const token = req.cookies.session;
-//   if (!token) return res.redirect("/login");
-
-//   try {
-//     const decoded = await admin.auth().verifySessionCookie(token, true);
-//     req.user = decoded;
-//     next();
-//   } catch (err) {
-//     console.error("Auth error:", err);
-//     return res.redirect("/login");
-//   }
-// }
-
 app.use(async (req, res, next) => {
   const token = req.cookies.session;
   if (!token) {
@@ -323,9 +305,38 @@ app.get("/scan", requireAuth, async (req, res) => {
   }
 });
 
+// image upload API
+app.post(
+  "/api/upload",
+  requireAuth,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+      // Upload buffer in cloudinary
+      const result = await cloudinary.v2.uploader.upload_stream(
+        { folder: "allergy-guard" },
+        (err, result) => {
+          if (err) {
+            console.error("Cloudinary upload error:", err);
+            return res.status(500).json({ error: "Upload failed" });
+          }
+          res.json({ url: result.secure_url });
+        }
+      );
+
+      result.end(req.file.buffer); // 파일 전송
+    } catch (err) {
+      console.error("Upload failed:", err);
+      res.status(500).json({ error: "Upload failed" });
+    }
+  }
+);
+
 // ocr result match
 app.post("/api/scan/match", requireAuth, async (req, res) => {
-  const { text } = req.body;
+  const { text, image } = req.body;
   if (!text) return res.status(400).json({ error: "Text required" });
 
   try {
@@ -348,6 +359,7 @@ app.post("/api/scan/match", requireAuth, async (req, res) => {
     await db.collection("users").doc(req.user.uid).collection("history").add({
       text,
       matched,
+      image,
       createdAt: new Date(),
     });
 
