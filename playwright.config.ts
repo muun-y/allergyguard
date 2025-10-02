@@ -14,7 +14,7 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } }
   ],
   webServer: {
-    command: 'node src/server.js',
+    command: 'node index.js',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI
   }
